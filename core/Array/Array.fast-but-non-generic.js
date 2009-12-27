@@ -60,18 +60,15 @@
 
 			var isArguments, regXBaseClass = (/^\[object\s+Object\]$/), exposeImplementation = ProtoObj.toString, isEnumerable = ProtoObj.propertyIsEnumerable;
 			try {
-
 				void isEnumerable.call(document.getElementsByTagName("*"), "length");
 				isArguments = (function (obj/*:[object|value]*/) {
 
 					return (regXBaseClass.test(exposeImplementation.call(obj)) && (typeof obj.length == "number") && !isEnumerable.call(obj, "length"));
 				});
-
 			} catch (exc) { // [exc]::[Error]
-
 				isArguments = (function (obj/*:[object|value]*/) {
 
-					return (regXBaseClass.test(exposeImplementation.call(obj)) && (typeof obj.length == "number") && !((function () {var isEnum;try {isEnum = isEnumerable.call(obj, "length");} catch (exc) {isEnum = true;}return isEnum;})()));
+					return (regXBaseClass.test(exposeImplementation.call(obj)) && (typeof obj.length == "number") && !(function () {var isEnum;try {isEnum = isEnumerable.call(obj, "length");} catch (exc) {isEnum = true;}return isEnum;})());
 				});
 			}
 			return isArguments;
