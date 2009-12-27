@@ -1,8 +1,16 @@
 
 
 /*
-	prototypal as well as static but mainly non-generic
-	implemented Array extension methods:
+	- prototypal as well as static but mainly non-generic
+	  implemented Array extension methods:
+
+	- none of the implementations is going to throw any
+	  single [[Error]] message. every method instead fails
+		silently but still smart enough in case of getting
+		invoked with invalid arguments.
+
+
+	- list of implemented Array extension methods:
 
 	[Array.isArray],						// type detection
 	[Array.isArgumentsArray],
@@ -10,6 +18,11 @@
 	[Array.make],								// generic creator
 
 	[Array.forEach]							// iterator
+	...
+	...
+
+
+	copy and paste code beneath into [http://jconsole.com/] for quick testing:
 */
 
 (function (sh) { // [sh]::[global|window] : "scripting host"
@@ -45,11 +58,23 @@
 		((typeof sh.isArgumentsArray == "function") && sh.isArgumentsArray) ||
 		(function () {
 
-			var regXBaseClass = (/^\[object\s+Object\]$/), exposeImplementation = ProtoObj.toString, isEnumerable = ProtoObj.propertyIsEnumerable;
-			return (function (obj/*:[object|value]*/) {
+			var isArguments, regXBaseClass = (/^\[object\s+Object\]$/), exposeImplementation = ProtoObj.toString, isEnumerable = ProtoObj.propertyIsEnumerable;
+			try {
 
-				return (regXBaseClass.test(exposeImplementation.call(obj)) && (typeof obj.length == "number") && !isEnumerable.call(obj, "length"));
-			});
+				void isEnumerable.call(document.getElementsByTagName("*"), "length");
+				isArguments = (function (obj/*:[object|value]*/) {
+
+					return (regXBaseClass.test(exposeImplementation.call(obj)) && (typeof obj.length == "number") && !isEnumerable.call(obj, "length"));
+				});
+
+			} catch (exc) { // [exc]::[Error]
+
+				isArguments = (function (obj/*:[object|value]*/) {
+
+					return (regXBaseClass.test(exposeImplementation.call(obj)) && (typeof obj.length == "number") && !((function () {var isEnum;try {isEnum = isEnumerable.call(obj, "length");} catch (exc) {isEnum = true;}return isEnum;})()));
+				});
+			}
+			return isArguments;
 		})()
 	);
 /*
@@ -66,6 +91,8 @@
 		var make, arr, str,
 		all = (document.getElementsByTagName && document.getElementsByTagName("*")),
 		slice = ProtoArr.slice,
+		isArguments = Arr.isArgumentsArray,
+		isArray = Arr.isArray,
 		isString = (
 			((typeof sh.isString == "function") && sh.isString) ||
 			(function () {
@@ -85,7 +112,7 @@
 			arr = slice.call(all); // msie fails.
 
 		//[arguments] test.
-			arr = slice.call(arguments);
+			arr = slice.call(arguments); // every relevant (seen from a point of market share) browser passes.
 			str = arr.join("");
 			if ((arr.length != 3) || (str != "Array.make")) {
 				throw (new Error);
@@ -102,13 +129,13 @@
 				var len = ((list || isString(list)) && list.length);
 				return (((typeof len == "number") && isFinite(len) && (slice.call(list) || (new Arr(len)))) || list); // ( ... || []); // ( ... || [list]); // there might be a debate on it.
 			});
-			delete isArray;
+			delete isArguments; delete isArray;
 
 		} catch (exc) { // [exc]::[Error]
 
 			make = (function (list) {
 
-				var len, arr = ((isString(list) && list.split("")) || (isArray(list) && slice.call(list)) || arr); // [String] and [Array] test shortcut.
+				var len, arr = ((isArguments(list) && slice.call(list)) || (isString(list) && list.split("")) || (isArray(list) && slice.call(list)) || len); // [arguments], [String] and [Array] test shortcut.
 				if (!arr) {
 				//len = (list && list.length); // (((0) && (0).length) === 0) // ((0 && window.undefined) === 0) // true
 					len = ((list !== 0) && list && list.length); // prevents passing zero as an argument.
@@ -139,3 +166,9 @@
 
 
 })(window || this);
+
+
+
+print(Array.make(document.getElementsByTagName("*")));
+print(Array.make((function(){return arguments})(1,2,3,4,5,6,7,8,9,0)));
+
