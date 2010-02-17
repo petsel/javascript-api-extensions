@@ -61,7 +61,7 @@
           fct.apply(obj, arr); // [fct]'s arguments are "(param01, param02, ...)" and [fct] itself will be executed within [obj]'s context.
         });
       } else {
-        throw (new TypeError("The object delegated via apply/call onto [[Function]]'s [bind] prototype is not callable."));
+        throw (new TypeError("The object delegated via apply/call onto [[Function]]'s prototypal [bind] is not callable."));
       }
     });
   })();
@@ -79,7 +79,7 @@
           fct.apply(obj, [evt || global.event].concat(arr)); // [fct]'s arguments are "(evt, param01, param02, ...)" and [fct] itself will be executed within [obj]'s context.
         });
       } else {
-        throw (new TypeError("The object delegated via apply/call onto [[Function]]'s [bindAsEventListener] prototype is not callable."));
+        throw (new TypeError("The object delegated via apply/call onto [[Function]]'s prototypal [bindAsEventListener] is not callable."));
       }
     });
   })();/*
