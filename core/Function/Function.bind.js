@@ -102,7 +102,34 @@
     });
   })();
 */
-})(); /*
+})();/*
+
+
+  [http://closure-compiler.appspot.com/home]
+
+- Whitespace only - 1.083 byte :
+//(function(){var sh=this&&this.window===this&&window||this,isFunction=typeof sh.isFunction=="function"&&sh.isFunction||function(obj){return typeof obj=="function"&&typeof obj.call=="function"&&typeof obj.apply=="function"};sh.Function.prototype.bind=function(){var slice=sh.Array.prototype.slice,isCallable=isFunction(sh.isCallable)&&sh.isCallable||isFunction;return function(){if(isCallable(this)){var arr=slice.call(arguments),obj=arr.shift(),fct=this;return function(){fct.apply(obj,arr)}}else throw new TypeError("The object delegated via apply/call onto [[Function]]'s prototypal [bind] is not callable.");}}();sh.Function.prototype.bindAsEventListener=function(){var slice=sh.Array.prototype.slice,isCallable=isFunction(sh.isCallable)&&sh.isCallable||isFunction;return function(){if(isCallable(this)){var arr=slice.call(arguments),obj=arr.shift(),fct=this,global=sh;return function(evt){fct.apply(obj,[evt||global.event].concat(arr))}}else throw new TypeError("The object delegated via apply/call onto [[Function]]'s prototypal [bindAsEventListener] is not callable.");}}()})();
+
+- Simple          -   920 byte :
+//(function(){var a=this&&this.window===this&&window||this,d=typeof a.isFunction=="function"&&a.isFunction||function(b){return typeof b=="function"&&typeof b.call=="function"&&typeof b.apply=="function"};a.Function.prototype.bind=function(){var b=a.Array.prototype.slice,e=d(a.isCallable)&&a.isCallable||d;return function(){if(e(this)){var c=b.call(arguments),f=c.shift(),g=this;return function(){g.apply(f,c)}}else throw new TypeError("The object delegated via apply/call onto [[Function]]'s prototypal [bind] is not callable.");}}();a.Function.prototype.bindAsEventListener=function(){var b=a.Array.prototype.slice,e=d(a.isCallable)&&a.isCallable||d;return function(){if(e(this)){var c=b.call(arguments),f=c.shift(),g=this;return function(h){g.apply(f,[h||a.event].concat(c))}}else throw new TypeError("The object delegated via apply/call onto [[Function]]'s prototypal [bindAsEventListener] is not callable.");}}()})();
+
+
+*/ /*
+
+
+  [http://dean.edwards.name/packer/]
+
+- packed                      - ?.??? byte :
+//
+
+- packed / shrinked           - ?.??? byte :
+//
+
+- packed / shrinked / encoded - ?.??? byte :
+//
+
+
+*/ /*
 
 
   please run this simple test within [http://jconsole.com/]
