@@ -14,7 +14,7 @@
 		getIsSupported = (function (propertyName) {
 			return (typeof styleOfDocElm[propertyName] == "string");
 		});
-		return {
+		return { // e.g. ...
 
 			isGECKO   : getIsSupported("MozOpacity"),
 			isKHTML   : (getIsSupported("KhtmlOpacity") && !getIsSupported("WebkitOpacity")),
@@ -22,7 +22,11 @@
 			isPRESTO  : getIsSupported("opPhonemes"),
 			isTRIDENT : getIsSupported("behavior"),
 
-			isWebkitTransform : getIsSupported("WebkitTransform")
+			isWebkitTransform : getIsSupported("WebkitTransform")/*,
+
+			isOneMoreProperty : getIsSupported("propertyName"),
+			isOneMoreProperty : getIsSupported("propertyName"),
+			isOneMoreProperty : getIsSupported("propertyName")*/
 		};
 	})(/*(document.documentElement || document.getElementsByTagName("html")[0]).style*/);
 /*
