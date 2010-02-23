@@ -1,196 +1,227 @@
 
 
 /*
-	- prototypal as well as static but almost always
-	  generic implemented Array extension methods.
+  - static only [[Array]] extensions that will
+    create arrays and detect array structures.
 
-	- all implementations do throw [[Error]] messages
-	  in case of getting invoked with invalid arguments.
-
-
-
-
-	- list of implemented Array extension methods:
-
-	[Array.isArray],						// type detection
-	[Array.isArgumentsArray],
-
-	[Array.make],								// generic creator
-
-	[Array.forEach]							// iterator
-	...
-	...
+  - the generic creator implementation [Array.make]
+    will throw a [[TypeError]] in case of getting
+    invoked with an invalid argument.
 
 
-	copy and paste code beneath into [http://jconsole.com/] for quick testing:
+
+
+  - list of implemented Array extension methods:
+
+  [Array.isArray],          // type detection
+  [Array.isArgumentsArray],
+
+  [Array.make]              // generic creator
+
+
+  copy and paste code beneath into [http://jconsole.com/] for quick testing:
 */
 
-(function (sh) { // [sh]::[global|window] : "scripting host"
+
+(function () {
 
 
-	var Arr = sh.Array, Obj = sh.Object,
-	ProtoArr = Arr.prototype, ProtoObj = Obj.prototype;
+  var sh/*global*/ = ((this && (this.window === this) && /*this.*/window) || this), // "scripting host" or "global object"
+
+  Arr = sh.Array/*, Obj = sh.Object*/, ProtoArr = Arr.prototype, ProtoObj = sh.Object.prototype, exposeImplementation = ProtoObj.toString;
 /*
 (function () {
-	print(Object.prototype.toString.call(arguments));
-	print(Object.prototype.propertyIsEnumerable.call(arguments, "length"));
-	print(Object.prototype.propertyIsEnumerable.call([], "length"));
-	print(Object.prototype.propertyIsEnumerable.call("", "length"));
-	print(Object.prototype.propertyIsEnumerable.call({length:0}, "length"));
-	print(Object.prototype.propertyIsEnumerable.call(document.getElementsByTagName("*"), "length"));
+  print(Object.prototype.toString.call(arguments));
+  print(Object.prototype.propertyIsEnumerable.call(arguments, "length"));
+  print(Object.prototype.propertyIsEnumerable.call([], "length"));
+  print(Object.prototype.propertyIsEnumerable.call("", "length"));
+  print(Object.prototype.propertyIsEnumerable.call({length:0}, "length"));
+  print(Object.prototype.propertyIsEnumerable.call(document.getElementsByTagName("*"), "length"));
 })()
 */
-	Arr.isArray = (
 
-		((typeof Arr.isArray == "function") && Arr.isArray) ||
-		((typeof sh.isArray == "function") && sh.isArray) ||
-		(function () {
 
-			var regXBaseClass = (/^\[object\s+Array\]$/), exposeImplementation = ProtoObj.toString;
-			return (function (obj/*:[object|value]*/) {
+  Arr.isArray = sh.isArray = (
 
-				return regXBaseClass.test(exposeImplementation.call(obj));
-			});
-		})()
-	);
-	Arr.isArgumentsArray = (
+    ((typeof Arr.isArray == "function") && Arr.isArray) ||
+    ((typeof sh.isArray == "function") && sh.isArray) ||
 
-		((typeof sh.isArgumentsArray == "function") && sh.isArgumentsArray) ||
-		(function () {
+    (function () { // equal to : Arr.isArray = sh.isArray = (function () { ... });
 
-			var isArguments, regXBaseClass = (/^\[object\s+Object\]$/), exposeImplementation = ProtoObj.toString, isEnumerable = ProtoObj.propertyIsEnumerable;
-			try {
-				isEnumerable.call(document.getElementsByTagName("*"), "length");
-				isArguments = (function (obj/*:[object|value]*/) {
+      var regXBaseClass = (/^\[object\s+Array\]$/), expose = exposeImplementation;
+      return (function (obj/*:[object|value]*/) {
 
-					return (regXBaseClass.test(exposeImplementation.call(obj)) && (typeof obj.length == "number") && !isEnumerable.call(obj, "length"));
-				});
-			} catch (exc) { // [exc]::[Error]
-				isArguments = (function (obj/*:[object|value]*/) {
+        return regXBaseClass.test(expose.call(obj));
+      });
+    })()
+  );
 
-					return (regXBaseClass.test(exposeImplementation.call(obj)) && (typeof obj.length == "number") && !(function () {var isEnum;try {isEnum = isEnumerable.call(obj, "length");} catch (exc) {isEnum = true;}return isEnum;})());
-				});
-			}
-			return isArguments;
-		})()
-	);
+
+  Arr.isArgumentsArray = (
+
+    ((typeof Arr.isArgumentsArray == "function") && Arr.isArgumentsArray) ||
+    (function () {
+
+      var isArguments, regXBaseClass = (/^\[object\s+Object\]$/), expose = exposeImplementation, isEnumerable = ProtoObj.propertyIsEnumerable;
+      try {
+        isEnumerable.call(sh, "length");
+        isArguments = (function (obj/*:[object|value]*/) {
+
+          return (regXBaseClass.test(expose.call(obj)) && !!obj && (typeof obj.length == "number") && !isEnumerable.call(obj, "length"));
+        });
+      } catch (exc) { // [exc]::[Error]
+        isArguments = (function (obj/*:[object|value]*/) {
+
+          return (regXBaseClass.test(expose.call(obj)) && !!obj && (typeof obj.length == "number") && !(function (elm) {var isEnum;try {isEnum = isEnumerable.call(elm, "length");} catch (exc) {isEnum = true;}return isEnum;})(obj));
+        });
+      }
+      return isArguments;
+    })()
+  );
 /*
 (function () {
-	print(Array.isArgumentsArray(arguments));
-	print(Array.isArgumentsArray([]));
-	print(Array.isArgumentsArray(""));
-	print(Array.isArgumentsArray({length:0}));
-	print(Array.isArgumentsArray(document.getElementsByTagName("*")));
+  print(Array.isArgumentsArray(arguments));
+  print(Array.isArgumentsArray([]));
+  print(Array.isArgumentsArray(""));
+  print(Array.isArgumentsArray({length:0}));
+  print(Array.isArgumentsArray(document.getElementsByTagName("*")));
 })()
 */
-	Arr.make = (function () {
-
-		var make, arr, str,
-		all = (document.getElementsByTagName && document.getElementsByTagName("*")),
-		slice = ProtoArr.slice,
-		isArguments = Arr.isArgumentsArray,
-		isArray = Arr.isArray,
-		isString = (
-			((typeof sh.isString == "function") && sh.isString) ||
-			(function () {
-
-				var regXBaseClass = (/^\[object\s+String\]$/), exposeImplementation = ProtoObj.toString;
-				return (function (obj/*:[object|value]*/) {
-
-					return regXBaseClass.test(exposeImplementation.call(obj));
-				});
-			})()
-		);
 
 
-		try {
+  Arr.make = (function () {
 
-		//[NodeList|HTMLCollection] test.
-			arr = slice.call(all); // msie fails.
+    var make, arr, str, doc = sh.document, global = sh,
+    all = ((doc && (typeof doc.getElementsByTagName == "function") && doc.getElementsByTagName("*")) || []),
+    slice = ProtoArr.slice,
+    isArguments = Arr.isArgumentsArray,
+    isArray = Arr.isArray,
+    isString = (
+      ((typeof sh.isString == "function") && sh.isString) ||
+      (function () {
 
-		//[arguments] test.
-			arr = slice.call(arguments); // every relevant (seen from a point of market share) browser passes.
-			str = arr.join("");
-			if ((arr.length != 3) || (str != "Array.make")) {
-				throw (new Error);
-			}
+        var regXBaseClass = (/^\[object\s+String\]$/), expose = exposeImplementation;
+        return (function (obj/*:[object|value]*/) {
 
-		//[String] test.
-			arr = slice.call(str); // opera and msie fail.
-			if ((arr.length !== 10) || (arr[5] !== ".")) {
-				throw (new Error);
-			}
-
-			make = (function (list) {
-
-				var arr, len = ((list || isString(list)) && list.length);
-				if ((typeof len == "number") && isFinite(len)) { // detect invalid list structures.
-
-				//arr = (slice.call(list, 0, len) || (new Arr(len)));
-				//arr = (slice.call(list, 0) || (new Arr(len)));
-					arr = (slice.call(list) || (new Arr(len)));
-				} else {
-					throw (new TypeError("1st argument needs to be some kind of list."));
-				}
-				return (arr || list); // (arr || []); // (arr || [list]); // there might be a debate on it.
-			});
-			delete isArguments; delete isArray;
-
-		} catch (exc) { // [exc]::[Error]
-
-			make = (function (list) {
-
-				var len, arr = ((isArguments(list) && slice.call(list)) || (isString(list) && list.split("")) || (isArray(list) && slice.call(list)) || len); // [arguments], [String] and [Array] test shortcut.
-				if (!arr) {
-				//len = (list && list.length); // (((0) && (0).length) === 0) // ((0 && window.undefined) === 0) // true
-					len = ((list !== 0) && list && list.length); // prevents passing zero as an argument.
-					if ((typeof len == "number") && isFinite(len)) { // detect invalid list structures.
-
-						arr = new Arr(len);
-
-						var i = 0, elm;
-						while (i < len) {
-						//elm = list[i];
-							elm = (/*(list.charAt && list.charAt(i)) || */(list.item && list.item(i)) || list[i]); // [String|string].charAt is not necessary anymore.
-							if ((typeof elm != "undefined") || (i in list)) {
-								arr[i] = elm;
-							}
-							++i;
-						}
-					} else {
-						throw (new TypeError("1st argument needs to be some kind of list."));
-					}
-				}
-			//return (Arr.filter(list, (function () {return true;})) || list);
-				return (arr || list); // (arr || []); // (arr || [list]); // there might be a debate on it.
-			});
-		}
-		delete arr; delete str; delete all;
-
-		return make;
-
-	})("Array", ".", "make");
+          return regXBaseClass.test(expose.call(obj));
+        });
+      })()
+    );
 
 
-})(window || this);
+    try {
+
+    //[NodeList|HTMLCollection] test in case this script runs within a certain W3C-DOM context (this test fails silently if there was no DOM at all).
+      arr = slice.call(all); // msie fails.
+
+    //[arguments] test.
+      arr = slice.call(arguments); // every relevant (seen from a point of market share) browser passes.
+      str = arr.join("");
+      if ((arr.length != 3) || (str != "Array.make")) {
+        throw (new Error);
+      }
+
+    //[String] test.
+      arr = slice.call(str); // opera and msie fail.
+      if ((arr.length !== 10) || (arr[5] !== ".")) {
+        throw (new Error);
+      }
+
+  //  so far fastest available, most reliable [Array.make] implementation - throwing a type error (debug version) - supported by all browsers that pass all of the above tests.
+      make = (function (list) {
+
+        var arr, len = ((list || isString(list)) && list.length);
+        if ((typeof len == "number") && global.isFinite(len)) { // detect invalid list structures.
+
+          arr = (slice.call(list)/* || (new Arr(len))*/);
+        } else {
+          throw (new TypeError("1st argument needs to be some kind of list."));
+        }
+        return arr; // (arr || list); // (arr || []); // (arr || [list]); // there might be a debate on it.
+      });
+
+    //clean up after
+      isArguments = null; isArray = null;
+      delete isArguments; delete isArray;
+
+    } catch (exc) { // [exc]::[Error]
+
+  //  so far most reliable [Array.make] implementation - throwing a type error (debug version) - fallback for all browsers that do fail at least one of the above tests.
+      make = (function (list) {
+
+        var elm, idx, arr = ((isArguments(list) && slice.call(list)) || (isString(list) && list.split("")) || (isArray(list) && slice.call(list)) || elm); // [arguments], [String] and [Array] test shortcut.
+        if (!arr) {
+        //idx = (list && list.length); // (((0) && (0).length) === 0) // ((0 && window.undefined) === 0) // true
+          idx = ((list !== 0) && list && list.length); // prevent passing zero as an argument.
+          if ((typeof idx == "number") && global.isFinite(idx)) { // detect invalid list structures.
+
+            arr = new global.Array(global.Math.max(0, idx));
+
+            if (typeof list.item == "function") {
+              while (--idx >= 0) {
+                elm = list.item(idx);
+                if ((typeof elm != "undefined") || (idx in list)) {
+                  arr[idx] = elm;
+                }
+              }
+            } else {
+              while (--idx >= 0) {
+                elm = list[idx];
+                if ((typeof elm != "undefined") || (idx in list)) {
+                  arr[idx] = elm;
+                }
+              }
+            }
+          } else {
+            throw (new TypeError("1st argument needs to be some kind of list."));
+          }
+        }
+        return arr; // (arr || list); // (arr || []); // (arr || [list]); // there might be a debate on it.
+      });
+    }
+  //clean up after
+    arr = null; str = null; doc = null; all = null;
+    delete arr; delete str; delete doc; delete all;
+
+    return make;
+
+  })("Array", ".", "make");
+
+
+})();
 
 
 
 print(Array.make(document.getElementsByTagName("*")));
 print(Array.make((function(){return arguments})(1,2,3,4,5,6,7,8,9,0)));
 
+
+
 /*
-	[http://closure-compiler.appspot.com/home]
-
-- simple : 5.176 byte down to 1.774 byte
-	(function(h){var d=h.Array,q=d.prototype,n=h.Object.prototype;d.isArray=typeof d.isArray=="function"&&d.isArray||typeof h.isArray=="function"&&h.isArray||function(){var f=/^\[object\s+Array\]$/,c=n.toString;return function(g){return f.test(c.call(g))}}();d.isArgumentsArray=typeof h.isArgumentsArray=="function"&&h.isArgumentsArray||function(){var f,c=/^\[object\s+Object\]$/,g=n.toString,j=n.propertyIsEnumerable;try{j.call(document.getElementsByTagName("*"),"length");f=function(e){return c.test(g.call(e))&& typeof e.length=="number"&&!j.call(e,"length")}}catch(i){f=function(e){return c.test(g.call(e))&&typeof e.length=="number"&&!function(){var k;try{k=j.call(e,"length")}catch(o){k=true}return k}()}}return f}();d.make=function(){var f,c,g,j=document.getElementsByTagName&&document.getElementsByTagName("*"),i=q.slice,e=d.isArgumentsArray,k=d.isArray,o=typeof h.isString=="function"&&h.isString||function(){var a=/^\[object\s+String\]$/,b=n.toString;return function(l){return a.test(b.call(l))}}();try{c=i.call(j); c=i.call(arguments);g=c.join("");if(c.length!=3||g!="Array.make")throw new Error;c=i.call(g);if(c.length!==10||c[5]!==".")throw new Error;f=function(a){var b;b=(a||o(a))&&a.length;if(typeof b=="number"&&isFinite(b))b=i.call(a)||new d(b);else throw new TypeError("1st argument needs to be some kind of list.");return b||a};delete e;delete k}catch(r){f=function(a){var b,l=e(a)&&i.call(a)||o(a)&&a.split("")||k(a)&&i.call(a)||b;if(!l){b=a!==0&&a&&a.length;if(typeof b=="number"&&isFinite(b)){l=new d(b); for(var m=0,p;m<b;){p=a.item&&a.item(m)||a[m];if(typeof p!="undefined"||m in a)l[m]=p;++m}}else throw new TypeError("1st argument needs to be some kind of list.");}return l||a}}delete c;delete g;delete j;return f}("Array",".","make")})(window||this);
 
 
-	[http://dean.edwards.name/packer/] bzw. [http://javascriptcompressor.com/]
+  [http://closure-compiler.appspot.com/home]
 
-- shrink variables only	: down to 2.313 byte
-	(function(d){var e=d.Array,Obj=d.Object,ProtoArr=e.prototype,ProtoObj=Obj.prototype;e.isArray=(((typeof e.isArray=="function")&&e.isArray)||((typeof d.isArray=="function")&&d.isArray)||(function(){var b=(/^\[object\s+Array\]$/),exposeImplementation=ProtoObj.toString;return(function(a){return b.test(exposeImplementation.call(a))})})());e.isArgumentsArray=(((typeof d.isArgumentsArray=="function")&&d.isArgumentsArray)||(function(){var c,regXBaseClass=(/^\[object\s+Object\]$/),exposeImplementation=ProtoObj.toString,isEnumerable=ProtoObj.propertyIsEnumerable;try{isEnumerable.call(document.getElementsByTagName("*"),"length");c=(function(a){return(regXBaseClass.test(exposeImplementation.call(a))&&(typeof a.length=="number")&&!isEnumerable.call(a,"length"))})}catch(exc){c=(function(b){return(regXBaseClass.test(exposeImplementation.call(b))&&(typeof b.length=="number")&&!(function(){var a;try{a=isEnumerable.call(b,"length")}catch(exc){a=true}return a})())})}return c})());e.make=(function(){var c,arr,str,all=(document.getElementsByTagName&&document.getElementsByTagName("*")),slice=ProtoArr.slice,isArguments=e.isArgumentsArray,isArray=e.isArray,isString=(((typeof d.isString=="function")&&d.isString)||(function(){var b=(/^\[object\s+String\]$/),exposeImplementation=ProtoObj.toString;return(function(a){return b.test(exposeImplementation.call(a))})})());try{arr=slice.call(all);arr=slice.call(arguments);str=arr.join("");if((arr.length!=3)||(str!="Array.make")){throw(new Error);}arr=slice.call(str);if((arr.length!==10)||(arr[5]!==".")){throw(new Error);}c=(function(a){var b,len=((a||isString(a))&&a.length);if((typeof len=="number")&&isFinite(len)){b=(slice.call(a)||(new e(len)))}else{throw(new TypeError("1st argument needs to be some kind of list."));}return(b||a)});delete isArguments;delete isArray}catch(exc){c=(function(a){var b,arr=((isArguments(a)&&slice.call(a))||(isString(a)&&a.split(""))||(isArray(a)&&slice.call(a))||b);if(!arr){b=((a!==0)&&a&&a.length);if((typeof b=="number")&&isFinite(b)){arr=new e(b);var i=0,elm;while(i<b){elm=((a.item&&a.item(i))||a[i]);if((typeof elm!="undefined")||(i in a)){arr[i]=elm}++i}}else{throw(new TypeError("1st argument needs to be some kind of list."));}}return(arr||a)})}delete arr;delete str;delete all;return c})("Array",".","make")})(window||this);
-	
-- shrink and encode			: down to 1.870 byte
-	eval(function(p,a,c,k,e,r){e=function(c){return(c<a?'':e(parseInt(c/a)))+((c=c%a)>35?String.fromCharCode(c+29):c.toString(36))};if(!''.replace(/^/,String)){while(c--)r[e(c)]=k[c]||e(c);k=[function(e){return r[e]}];e=function(){return'\\w+'};c=1};while(c--)if(k[c])p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c]);return p}('(1(d){7 e=d.p,J=d.M,Q=e.K,n=J.K;e.8=(((9 e.8=="1")&&e.8)||((9 d.8=="1")&&d.8)||(1(){7 b=(/^\\[D\\s+p\\]$/),h=n.C;6(1(a){6 b.u(h.4(a))})})());e.x=(((9 d.x=="1")&&d.x)||(1(){7 c,E=(/^\\[D\\s+M\\]$/),h=n.C,r=n.17;A{r.4(z.H("*"),"f");c=(1(a){6(E.u(h.4(a))&&(9 a.f=="w")&&!r.4(a,"f"))})}B(I){c=(1(b){6(E.u(h.4(b))&&(9 b.f=="w")&&!(1(){7 a;A{a=r.4(b,"f")}B(I){a=16}6 a})())})}6 c})());e.y=(1(){7 c,2,m,G=(z.H&&z.H("*")),g=Q.g,F=e.x,8=e.8,l=(((9 d.l=="1")&&d.l)||(1(){7 b=(/^\\[D\\s+13\\]$/),h=n.C;6(1(a){6 b.u(h.4(a))})})());A{2=g.4(G);2=g.4(12);m=2.1b("");j((2.f!=3)||(m!="p.y")){t(k N);}2=g.4(m);j((2.f!==10)||(2[5]!==".")){t(k N);}c=(1(a){7 b,v=((a||l(a))&&a.f);j((9 v=="w")&&R(v)){b=(g.4(a)||(k e(v)))}S{t(k T("U V W X Y Z 11 P O."));}6(b||a)});o F;o 8}B(I){c=(1(a){7 b,2=((F(a)&&g.4(a))||(l(a)&&a.1c(""))||(8(a)&&g.4(a))||b);j(!2){b=((a!==0)&&a&&a.f);j((9 b=="w")&&R(b)){2=k e(b);7 i=0,q;1a(i<b){q=((a.L&&a.L(i))||a[i]);j((9 q!="19")||(i 14 a)){2[i]=q}++i}}S{t(k T("U V W X Y Z 11 P O."));}}6(2||a)})}o 2;o m;o G;6 c})("p",".","y")})(18||15);',62,75,'|function|arr||call||return|var|isArray|typeof||||||length|slice|exposeImplementation||if|new|isString|str|ProtoObj|delete|Array|elm|isEnumerable||throw|test|len|number|isArgumentsArray|make|document|try|catch|toString|object|regXBaseClass|isArguments|all|getElementsByTagName|exc|Obj|prototype|item|Object|Error|list|of|ProtoArr|isFinite|else|TypeError|1st|argument|needs|to|be|some||kind|arguments|String|in|this|true|propertyIsEnumerable|window|undefined|while|join|split'.split('|'),0,{}));
+- Whitespace only - 2.668 byte
+(function(){var sh=this&&this.window===this&&window||this,Arr=sh.Array,ProtoArr=Arr.prototype,ProtoObj=sh.Object.prototype,exposeImplementation=ProtoObj.toString;Arr.isArray=sh.isArray=typeof Arr.isArray=="function"&&Arr.isArray||typeof sh.isArray=="function"&&sh.isArray||function(){var regXBaseClass=/^\[object\s+Array\]$/,expose=exposeImplementation;return function(obj){return regXBaseClass.test(expose.call(obj))}}();Arr.isArgumentsArray=typeof Arr.isArgumentsArray=="function"&&Arr.isArgumentsArray||function(){var isArguments,regXBaseClass=/^\[object\s+Object\]$/,expose=exposeImplementation,isEnumerable=ProtoObj.propertyIsEnumerable;try{isEnumerable.call(sh,"length");isArguments=function(obj){return regXBaseClass.test(expose.call(obj))&&!!obj&&typeof obj.length=="number"&&!isEnumerable.call(obj,"length")}}catch(exc){isArguments=function(obj){return regXBaseClass.test(expose.call(obj))&&!!obj&&typeof obj.length=="number"&&!function(elm){var isEnum;try{isEnum=isEnumerable.call(elm,"length")}catch(exc){isEnum=true}return isEnum}(obj)}}return isArguments}();Arr.make=function(){var make,arr,str,doc=sh.document,global=sh,all=doc&&typeof doc.getElementsByTagName=="function"&&doc.getElementsByTagName("*")||[],slice=ProtoArr.slice,isArguments=Arr.isArgumentsArray,isArray=Arr.isArray,isString=typeof sh.isString=="function"&&sh.isString||function(){var regXBaseClass=/^\[object\s+String\]$/,expose=exposeImplementation;return function(obj){return regXBaseClass.test(expose.call(obj))}}();try{arr=slice.call(all);arr=slice.call(arguments);str=arr.join("");if(arr.length!=3||str!="Array.make")throw new Error;arr=slice.call(str);if(arr.length!==10||arr[5]!==".")throw new Error;make=function(list){var arr,len=(list||isString(list))&&list.length;if(typeof len=="number"&&global.isFinite(len))arr=slice.call(list);else throw new TypeError("1st argument needs to be some kind of list.");return arr};isArguments=null;isArray=null;delete isArguments;delete isArray}catch(exc){make=function(list){var elm,idx,arr=isArguments(list)&&slice.call(list)||isString(list)&&list.split("")||isArray(list)&&slice.call(list)||elm;if(!arr){idx=list!==0&&list&&list.length;if(typeof idx=="number"&&global.isFinite(idx)){arr=new global.Array(global.Math.max(0,idx));if(typeof list.item=="function")while(--idx>=0){elm=list.item(idx);if(typeof elm!="undefined"||idx in list)arr[idx]=elm}else while(--idx>=0){elm=list[idx];if(typeof elm!="undefined"||idx in list)arr[idx]=elm}}else throw new TypeError("1st argument needs to be some kind of list.");}return arr}}arr=null;str=null;doc=null;all=null;delete arr;delete str;delete doc;delete all;return make}("Array",".","make")})();
+
+- Simple          - 1.897 byte
+(function(){var c=this&&this.window===this&&window||this,g=c.Array,r=g.prototype,p=c.Object.prototype,n=p.toString;g.isArray=c.isArray=typeof g.isArray=="function"&&g.isArray||typeof c.isArray=="function"&&c.isArray||function(){var h=/^\[object\s+Array\]$/;return function(b){return h.test(n.call(b))}}();g.isArgumentsArray=typeof g.isArgumentsArray=="function"&&g.isArgumentsArray||function(){var h,b=/^\[object\s+Object\]$/,i=p.propertyIsEnumerable;try{i.call(c,"length");h=function(d){return b.test(n.call(d))&&!!d&&typeof d.length=="number"&&!i.call(d,"length")}}catch(l){h=function(d){return b.test(n.call(d))&&!!d&&typeof d.length=="number"&&!function(j){var k;try{k=i.call(j,"length")}catch(o){k=true}return k}(d)}}return h}();g.make=function(){var h,b,i,l=c.document,d=l&&typeof l.getElementsByTagName=="function"&&l.getElementsByTagName("*")||[],j=r.slice,k=g.isArgumentsArray,o=g.isArray,q=typeof c.isString=="function"&&c.isString||function(){var a=/^\[object\s+String\]$/;return function(e){return a.test(n.call(e))}}();try{b=j.call(d);b=j.call(arguments);i=b.join("");if(b.length!=3||i!="Array.make")throw new Error;b=j.call(i);if(b.length!==10||b[5]!==".")throw new Error;h=function(a){var e=(a||q(a))&&a.length;if(typeof e=="number"&&c.isFinite(e))a=j.call(a);else throw new TypeError("1st argument needs to be some kind of list.");return a};o=k=null;delete k;delete o}catch(s){h=function(a){var e,f,m=k(a)&&j.call(a)||q(a)&&a.split("")||o(a)&&j.call(a)||e;if(!m){f=a!==0&&a&&a.length;if(typeof f=="number"&&c.isFinite(f)){m=new c.Array(c.Math.max(0,f));if(typeof a.item=="function")for(;--f>=0;){e=a.item(f);if(typeof e!="undefined"||f in a)m[f]=e}else for(;--f>=0;){e=a[f];if(typeof e!="undefined"||f in a)m[f]=e}}else throw new TypeError("1st argument needs to be some kind of list.");}return m}}d=l=i=b=null;delete b;delete i;delete l;delete d;return h}("Array",".","make")})();
+
+
+*/ /*
+
+
+  [http://dean.edwards.name/packer/]
+
+- packed                      - 2.788 byte
+(function(){var sh=((this&&(this.window===this)&&window)||this),Arr=sh.Array,ProtoArr=Arr.prototype,ProtoObj=sh.Object.prototype,exposeImplementation=ProtoObj.toString;Arr.isArray=sh.isArray=(((typeof Arr.isArray=="function")&&Arr.isArray)||((typeof sh.isArray=="function")&&sh.isArray)||(function(){var regXBaseClass=(/^\[object\s+Array\]$/),expose=exposeImplementation;return(function(obj){return regXBaseClass.test(expose.call(obj))})})());Arr.isArgumentsArray=(((typeof Arr.isArgumentsArray=="function")&&Arr.isArgumentsArray)||(function(){var isArguments,regXBaseClass=(/^\[object\s+Object\]$/),expose=exposeImplementation,isEnumerable=ProtoObj.propertyIsEnumerable;try{isEnumerable.call(sh,"length");isArguments=(function(obj){return(regXBaseClass.test(expose.call(obj))&&!!obj&&(typeof obj.length=="number")&&!isEnumerable.call(obj,"length"))})}catch(exc){isArguments=(function(obj){return(regXBaseClass.test(expose.call(obj))&&!!obj&&(typeof obj.length=="number")&&!(function(elm){var isEnum;try{isEnum=isEnumerable.call(elm,"length")}catch(exc){isEnum=true}return isEnum})(obj))})}return isArguments})());Arr.make=(function(){var make,arr,str,doc=sh.document,global=sh,all=((doc&&(typeof doc.getElementsByTagName=="function")&&doc.getElementsByTagName("*"))||[]),slice=ProtoArr.slice,isArguments=Arr.isArgumentsArray,isArray=Arr.isArray,isString=(((typeof sh.isString=="function")&&sh.isString)||(function(){var regXBaseClass=(/^\[object\s+String\]$/),expose=exposeImplementation;return(function(obj){return regXBaseClass.test(expose.call(obj))})})());try{arr=slice.call(all);arr=slice.call(arguments);str=arr.join("");if((arr.length!=3)||(str!="Array.make")){throw(new Error);}arr=slice.call(str);if((arr.length!==10)||(arr[5]!==".")){throw(new Error);}make=(function(list){var arr,len=((list||isString(list))&&list.length);if((typeof len=="number")&&global.isFinite(len)){arr=(slice.call(list))}else{throw(new TypeError("1st argument needs to be some kind of list."));}return arr});isArguments=null;isArray=null;delete isArguments;delete isArray}catch(exc){make=(function(list){var elm,idx,arr=((isArguments(list)&&slice.call(list))||(isString(list)&&list.split(""))||(isArray(list)&&slice.call(list))||elm);if(!arr){idx=((list!==0)&&list&&list.length);if((typeof idx=="number")&&global.isFinite(idx)){arr=new global.Array(global.Math.max(0,idx));if(typeof list.item=="function"){while(--idx>=0){elm=list.item(idx);if((typeof elm!="undefined")||(idx in list)){arr[idx]=elm}}}else{while(--idx>=0){elm=list[idx];if((typeof elm!="undefined")||(idx in list)){arr[idx]=elm}}}}else{throw(new TypeError("1st argument needs to be some kind of list."));}}return arr})}arr=null;str=null;doc=null;all=null;delete arr;delete str;delete doc;delete all;return make})("Array",".","make")})();
+
+- packed / shrinked           - 2.543 byte
+(function(){var e=((this&&(this.window===this)&&window)||this),Arr=e.Array,ProtoArr=Arr.prototype,ProtoObj=e.Object.prototype,exposeImplementation=ProtoObj.toString;Arr.isArray=e.isArray=(((typeof Arr.isArray=="function")&&Arr.isArray)||((typeof e.isArray=="function")&&e.isArray)||(function(){var b=(/^\[object\s+Array\]$/),expose=exposeImplementation;return(function(a){return b.test(expose.call(a))})})());Arr.isArgumentsArray=(((typeof Arr.isArgumentsArray=="function")&&Arr.isArgumentsArray)||(function(){var d,regXBaseClass=(/^\[object\s+Object\]$/),expose=exposeImplementation,isEnumerable=ProtoObj.propertyIsEnumerable;try{isEnumerable.call(e,"length");d=(function(a){return(regXBaseClass.test(expose.call(a))&&!!a&&(typeof a.length=="number")&&!isEnumerable.call(a,"length"))})}catch(exc){d=(function(c){return(regXBaseClass.test(expose.call(c))&&!!c&&(typeof c.length=="number")&&!(function(a){var b;try{b=isEnumerable.call(a,"length")}catch(exc){b=true}return b})(c))})}return d})());Arr.make=(function(){var c,arr,str,doc=e.document,global=e,all=((doc&&(typeof doc.getElementsByTagName=="function")&&doc.getElementsByTagName("*"))||[]),slice=ProtoArr.slice,isArguments=Arr.isArgumentsArray,isArray=Arr.isArray,isString=(((typeof e.isString=="function")&&e.isString)||(function(){var b=(/^\[object\s+String\]$/),expose=exposeImplementation;return(function(a){return b.test(expose.call(a))})})());try{arr=slice.call(all);arr=slice.call(arguments);str=arr.join("");if((arr.length!=3)||(str!="Array.make")){throw(new Error);}arr=slice.call(str);if((arr.length!==10)||(arr[5]!==".")){throw(new Error);}c=(function(a){var b,len=((a||isString(a))&&a.length);if((typeof len=="number")&&global.isFinite(len)){b=(slice.call(a))}else{throw(new TypeError("1st argument needs to be some kind of list."));}return b});isArguments=null;isArray=null;delete isArguments;delete isArray}catch(exc){c=(function(a){var b,idx,arr=((isArguments(a)&&slice.call(a))||(isString(a)&&a.split(""))||(isArray(a)&&slice.call(a))||b);if(!arr){idx=((a!==0)&&a&&a.length);if((typeof idx=="number")&&global.isFinite(idx)){arr=new global.Array(global.Math.max(0,idx));if(typeof a.item=="function"){while(--idx>=0){b=a.item(idx);if((typeof b!="undefined")||(idx in a)){arr[idx]=b}}}else{while(--idx>=0){b=a[idx];if((typeof b!="undefined")||(idx in a)){arr[idx]=b}}}}else{throw(new TypeError("1st argument needs to be some kind of list."));}}return arr})}arr=null;str=null;doc=null;all=null;delete arr;delete str;delete doc;delete all;return c})("Array",".","make")})();
+
+- packed / shrinked / encoded - 2.035 byte
+eval(function(p,a,c,k,e,r){e=function(c){return(c<a?'':e(parseInt(c/a)))+((c=c%a)>35?String.fromCharCode(c+29):c.toString(36))};if(!''.replace(/^/,String)){while(c--)r[e(c)]=k[c]||e(c);k=[function(e){return r[e]}];e=function(){return'\\w+'};c=1};while(c--)if(k[c])p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c]);return p}('(1(){j e=((x&&(x.P===x)&&P)||x),f=e.q,Z=f.13,D=e.O.13,y=D.1a;f.9=e.9=(((7 f.9=="1")&&f.9)||((7 e.9=="1")&&e.9)||(1(){j b=(/^\\[E\\s+q\\]$/),k=y;8(1(a){8 b.B(k.4(a))})})());f.A=(((7 f.A=="1")&&f.A)||(1(){j d,F=(/^\\[E\\s+O\\]$/),k=y,z=D.1b;J{z.4(e,"g");d=(1(a){8(F.B(k.4(a))&&!!a&&(7 a.g=="C")&&!z.4(a,"g"))})}K(G){d=(1(c){8(F.B(k.4(c))&&!!c&&(7 c.g=="C")&&!(1(a){j b;J{b=z.4(a,"g")}K(G){b=1d}8 b})(c))})}8 d})());f.L=(1(){j c,2,m,l=e.1g,r=e,u=((l&&(7 l.11=="1")&&l.11("*"))||[]),i=Z.i,v=f.A,9=f.9,p=(((7 e.p=="1")&&e.p)||(1(){j b=(/^\\[E\\s+1h\\]$/),k=y;8(1(a){8 b.B(k.4(a))})})());J{2=i.4(u);2=i.4(18);m=2.19("");h((2.g!=3)||(m!="q.L")){w(t 12);}2=i.4(m);h((2.g!==10)||(2[5]!==".")){w(t 12);}c=(1(a){j b,H=((a||p(a))&&a.g);h((7 H=="C")&&r.N(H)){b=(i.4(a))}I{w(t M("Q R S T U V W X Y."));}8 b});v=n;9=n;o v;o 9}K(G){c=(1(a){j b,6,2=((v(a)&&i.4(a))||(p(a)&&a.1c(""))||(9(a)&&i.4(a))||b);h(!2){6=((a!==0)&&a&&a.g);h((7 6=="C")&&r.N(6)){2=t r.q(r.1e.1f(0,6));h(7 a.14=="1"){15(--6>=0){b=a.14(6);h((7 b!="16")||(6 17 a)){2[6]=b}}}I{15(--6>=0){b=a[6];h((7 b!="16")||(6 17 a)){2[6]=b}}}}I{w(t M("Q R S T U V W X Y."));}}8 2})}2=n;m=n;l=n;u=n;o 2;o m;o l;o u;8 c})("q",".","L")})();',62,80,'|function|arr||call||idx|typeof|return|isArray||||||Arr|length|if|slice|var|expose|doc|str|null|delete|isString|Array|global||new|all|isArguments|throw|this|exposeImplementation|isEnumerable|isArgumentsArray|test|number|ProtoObj|object|regXBaseClass|exc|len|else|try|catch|make|TypeError|isFinite|Object|window|1st|argument|needs|to|be|some|kind|of|list|ProtoArr||getElementsByTagName|Error|prototype|item|while|undefined|in|arguments|join|toString|propertyIsEnumerable|split|true|Math|max|document|String'.split('|'),0,{}));
+
+
 */
