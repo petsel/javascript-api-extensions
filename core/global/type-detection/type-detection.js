@@ -253,7 +253,7 @@
   });
 
 
-  sh.isArray = (((typeof sh.Array.isArray == "function") && sh.Array.isArray) || (sh.Array.isArray = (function () {
+  sh.isArray = (((typeof sh.Array.isArray == "function") && sh.Array.isArray) || (sh.Array.isArray = (function () { // equal to : sh.isArray = Arr.isArray = (function () { ... });
 
     var regXBaseClass = (/^\[object\s+Array\]$/), expose = exposeImplementation;
     return (function (obj/*:[object|value]*/) {
