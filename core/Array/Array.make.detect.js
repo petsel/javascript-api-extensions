@@ -183,7 +183,7 @@
 
 //clean up after
   sh = null; Arr = null; ProtoArr = null; ProtoObj = null; exposeImplementation = null; isFunction = null;
-	delete sh; delete Arr; delete ProtoArr; delete ProtoObj; delete exposeImplementation; delete isFunction;
+  delete sh; delete Arr; delete ProtoArr; delete ProtoObj; delete exposeImplementation; delete isFunction;
 
 })();
 

@@ -7,118 +7,118 @@
 (function () {
 
 
-	var sh/*global*/ = ((this && (this.window === this) && /*this.*/window) || this), // "scripting host" or "global object"
+  var sh/*global*/ = ((this && (this.window === this) && /*this.*/window) || this), // "scripting host" or "global object"
 
 //Arr = sh.Array/*, Obj = sh.Object*/, ProtoArr = Arr.prototype, ProtoObj = sh.Object.prototype, exposeImplementation = ProtoObj.toString;
-	Arr = sh.Array, ProtoArr = Arr.prototype,
+  Arr = sh.Array, ProtoArr = Arr.prototype,
 
-	isFunction = (((typeof sh.isFunction == "function") && sh.isFunction) || (function (obj) {return (typeof obj == "function");}));
+  isFunction = (((typeof sh.isFunction == "function") && sh.isFunction) || (function (obj) {return (typeof obj == "function");}));
 
-	if (!Arr || !isFunction(Arr.isArray) || !isFunction(Arr.make)) {
-		throw (new ReferenceError("All [[Array]] implementations badly require the presence of the [[Array]] extensions module base [Array.make.detect]."));
-	}
-
-
-	ProtoArr.forEach = (function () {
-
-		var isArray = Arr.isArray, makeArray = Arr.make;
-		return (function (fct, target) {
-
-			var arr = ((isArray(this) && this) || makeArray(this));
-			if (arr && (typeof fct == "function")) { // fail silently
-
-				target = (((typeof target == "undefined") || ((typeof target == "obj") && !target)) ? (null) : (target));
-				var elm, i = -1, len = arr.length;
-				while (++i < len) {
-					elm = arr[i];
-					if ((typeof elm != "undefined") || (i in arr)) { // countercheck on this issue with [https://bugzilla.mozilla.org/show_bug.cgi?id=475925] and [http://code.google.com/p/v8/issues/detail?id=218]
-						fct.call(target, elm, i, arr);
-					}
-				}
-			}
-		});
-	})();
-	Arr.forEach = (function () {
-
-		var forEach = ProtoArr.forEach
-		return (function (list, fct, target) {
-
-			forEach.call(list, fct, target);
-		});
-	})();
+  if (!Arr || !isFunction(Arr.isArray) || !isFunction(Arr.make)) {
+    throw (new ReferenceError("All [[Array]] implementations badly require the presence of the [[Array]] extensions module base [Array.make.detect]."));
+  }
 
 
-	ProtoArr.every = (function () {
+  ProtoArr.forEach = (function () {
 
-		var isArray = Arr.isArray, makeArray = Arr.make;
-		return (function (fct, target) {
+    var isArray = Arr.isArray, makeArray = Arr.make;
+    return (function (fct, target) {
 
-			var isAnd, arr = ((isArray(this) && this) || makeArray(this));
-			if (arr && (typeof fct == "function")) { // fail silently
+      var arr = ((isArray(this) && this) || makeArray(this));
+      if (arr && (typeof fct == "function")) { // fail silently
 
-				var elm, i = -1, len = arr.length, hasSome = false; // [hasSome] : countercheck if at least one element passes the [fct]-filter e.g. in case of all list entries were [undefined] values.
-				if (len >= 1) {
+        target = (((typeof target == "undefined") || ((typeof target == "obj") && !target)) ? (null) : (target));
+        var elm, i = -1, len = arr.length;
+        while (++i < len) {
+          elm = arr[i];
+          if ((typeof elm != "undefined") || (i in arr)) { // countercheck on this issue with [https://bugzilla.mozilla.org/show_bug.cgi?id=475925] and [http://code.google.com/p/v8/issues/detail?id=218]
+            fct.call(target, elm, i, arr);
+          }
+        }
+      }
+    });
+  })();
+  Arr.forEach = (function () {
 
-					target = (((typeof target == "undefined") || ((typeof target == "obj") && !target)) ? (null) : (target));
-					isAnd = true;
-					while (isAnd && (++i < len)) {
-						elm = arr[i];
-						if ((typeof elm != "undefined") || (i in arr)) {
-							hasSome = true;
-							isAnd = fct.call(target, elm, i, arr);
-						}
-					}
-					isAnd = (hasSome && isAnd);
-				}
-			}
-			return !!isAnd; // prevents return of the initial [undefined] value for [isAnd].
-		});
-	})();
-	Arr.every = (function () {
+    var forEach = ProtoArr.forEach
+    return (function (list, fct, target) {
 
-		var every = ProtoArr.every
-		return (function (list, fct, target) {
+      forEach.call(list, fct, target);
+    });
+  })();
 
-			return every.call(list, fct, target);
-		});
-	})();
+
+  ProtoArr.every = (function () {
+
+    var isArray = Arr.isArray, makeArray = Arr.make;
+    return (function (fct, target) {
+
+      var isAnd, arr = ((isArray(this) && this) || makeArray(this));
+      if (arr && (typeof fct == "function")) { // fail silently
+
+        var elm, i = -1, len = arr.length, hasSome = false; // [hasSome] : countercheck if at least one element passes the [fct]-filter e.g. in case of all list entries were [undefined] values.
+        if (len >= 1) {
+
+          target = (((typeof target == "undefined") || ((typeof target == "obj") && !target)) ? (null) : (target));
+          isAnd = true;
+          while (isAnd && (++i < len)) {
+            elm = arr[i];
+            if ((typeof elm != "undefined") || (i in arr)) {
+              hasSome = true;
+              isAnd = fct.call(target, elm, i, arr);
+            }
+          }
+          isAnd = (hasSome && isAnd);
+        }
+      }
+      return !!isAnd; // prevents return of the initial [undefined] value for [isAnd].
+    });
+  })();
+  Arr.every = (function () {
+
+    var every = ProtoArr.every
+    return (function (list, fct, target) {
+
+      return every.call(list, fct, target);
+    });
+  })();
 //Array.every("aaaaaaaaaaa", (function (elm) {return (elm === "a");}));
 
 
-	ProtoArr.some = (function () {
+  ProtoArr.some = (function () {
 
-		var isArray = Arr.isArray, makeArray = Arr.make;
-		return (function (fct, target) {
+    var isArray = Arr.isArray, makeArray = Arr.make;
+    return (function (fct, target) {
 
-			var isOr, arr = ((isArray(this) && this) || makeArray(this));
-			if (arr && (typeof fct == "function")) { // fail silently
+      var isOr, arr = ((isArray(this) && this) || makeArray(this));
+      if (arr && (typeof fct == "function")) { // fail silently
 
-				var elm, i = -1, len = arr.length, hasSome = false;// [hasSome] : countercheck if at least one element passes the [fct]-filter e.g. in case of all list entries were [undefined] values.
-				if (len >= 1) {
+        var elm, i = -1, len = arr.length, hasSome = false;// [hasSome] : countercheck if at least one element passes the [fct]-filter e.g. in case of all list entries were [undefined] values.
+        if (len >= 1) {
 
-					target = (((typeof target == "undefined") || ((typeof target == "obj") && !target)) ? (null) : (target));
-					isOr = false;
-					while (!isOr && (++i < len)) {
-						elm = arr[i];
-						if ((typeof elm != "undefined") || (i in arr)) {
-							hasSome = true;
-							isOr = fct.call(target, elm, i, arr);
-						}
-					}
-					isOr = (hasSome && isOr);
-				}
-			}
-			return !!isOr; // prevents return of the initial [undefined] value for [isOr].
-		});
-	})();
-	Arr.some = (function () {
+          target = (((typeof target == "undefined") || ((typeof target == "obj") && !target)) ? (null) : (target));
+          isOr = false;
+          while (!isOr && (++i < len)) {
+            elm = arr[i];
+            if ((typeof elm != "undefined") || (i in arr)) {
+              hasSome = true;
+              isOr = fct.call(target, elm, i, arr);
+            }
+          }
+          isOr = (hasSome && isOr);
+        }
+      }
+      return !!isOr; // prevents return of the initial [undefined] value for [isOr].
+    });
+  })();
+  Arr.some = (function () {
 
-		var some = ProtoArr.some
-		return (function (list, fct, target) {
+    var some = ProtoArr.some
+    return (function (list, fct, target) {
 
-			return some.call(list, fct, target);
-		});
-	})();
+      return some.call(list, fct, target);
+    });
+  })();
 //Array.some("bbbbbbbbbba", (function (elm) {return (elm === "a");}));
 
 

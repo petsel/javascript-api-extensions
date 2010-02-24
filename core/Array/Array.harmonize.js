@@ -164,83 +164,83 @@
   })());
 
 
-	ProtoArr.every = ((isFunction(ProtoArr.every) && ProtoArr.every) || (function () {
+  ProtoArr.every = ((isFunction(ProtoArr.every) && ProtoArr.every) || (function () {
 
-		var isArray = Arr.isArray, makeArray = Arr.make;
-		return (function (fct, target) {
+    var isArray = Arr.isArray, makeArray = Arr.make;
+    return (function (fct, target) {
 
-			var isAnd, arr = ((isArray(this) && this) || makeArray(this));
-			if (arr && (typeof fct == "function")) { // fail silently
+      var isAnd, arr = ((isArray(this) && this) || makeArray(this));
+      if (arr && (typeof fct == "function")) { // fail silently
 
-				var elm, i = -1, len = arr.length, hasSome = false; // [hasSome] : countercheck if at least one element passes the [fct]-filter e.g. in case of all list entries were [undefined] values.
-				if (len >= 1) {
+        var elm, i = -1, len = arr.length, hasSome = false; // [hasSome] : countercheck if at least one element passes the [fct]-filter e.g. in case of all list entries were [undefined] values.
+        if (len >= 1) {
 
-					target = (((typeof target == "undefined") || ((typeof target == "obj") && !target)) ? (null) : (target));
-					isAnd = true;
-					while (isAnd && (++i < len)) {
-						elm = arr[i];
-						if ((typeof elm != "undefined") || (i in arr)) {
-							hasSome = true;
-							isAnd = fct.call(target, elm, i, arr);
-						}
-					}
-					isAnd = (hasSome && isAnd);
-				}
-			}
-			return !!isAnd; // prevents return of the initial [undefined] value for [isAnd].
-		});
-	})());
-	Arr.every = ((isFunction(Arr.every) && Arr.every) || (function () {
+          target = (((typeof target == "undefined") || ((typeof target == "obj") && !target)) ? (null) : (target));
+          isAnd = true;
+          while (isAnd && (++i < len)) {
+            elm = arr[i];
+            if ((typeof elm != "undefined") || (i in arr)) {
+              hasSome = true;
+              isAnd = fct.call(target, elm, i, arr);
+            }
+          }
+          isAnd = (hasSome && isAnd);
+        }
+      }
+      return !!isAnd; // prevents return of the initial [undefined] value for [isAnd].
+    });
+  })());
+  Arr.every = ((isFunction(Arr.every) && Arr.every) || (function () {
 
-		var every = ProtoArr.every
-		return (function (list, fct, target) {
+    var every = ProtoArr.every
+    return (function (list, fct, target) {
 
-			return every.call(list, fct, target);
-		});
-	})());
+      return every.call(list, fct, target);
+    });
+  })());
 //Array.every("aaaaaaaaaaa", (function (elm) {return (elm === "a");}));
 
 
-	ProtoArr.some = ((isFunction(ProtoArr.some) && ProtoArr.some) || (function () {
+  ProtoArr.some = ((isFunction(ProtoArr.some) && ProtoArr.some) || (function () {
 
-		var isArray = Arr.isArray, makeArray = Arr.make;
-		return (function (fct, target) {
+    var isArray = Arr.isArray, makeArray = Arr.make;
+    return (function (fct, target) {
 
-			var isOr, arr = ((isArray(this) && this) || makeArray(this));
-			if (arr && (typeof fct == "function")) { // fail silently
+      var isOr, arr = ((isArray(this) && this) || makeArray(this));
+      if (arr && (typeof fct == "function")) { // fail silently
 
-				var elm, i = -1, len = arr.length, hasSome = false;// [hasSome] : countercheck if at least one element passes the [fct]-filter e.g. in case of all list entries were [undefined] values.
-				if (len >= 1) {
+        var elm, i = -1, len = arr.length, hasSome = false;// [hasSome] : countercheck if at least one element passes the [fct]-filter e.g. in case of all list entries were [undefined] values.
+        if (len >= 1) {
 
-					target = (((typeof target == "undefined") || ((typeof target == "obj") && !target)) ? (null) : (target));
-					isOr = false;
-					while (!isOr && (++i < len)) {
-						elm = arr[i];
-						if ((typeof elm != "undefined") || (i in arr)) {
-							hasSome = true;
-							isOr = fct.call(target, elm, i, arr);
-						}
-					}
-					isOr = (hasSome && isOr);
-				}
-			}
-			return !!isOr; // prevents return of the initial [undefined] value for [isOr].
-		});
-	})());
-	Arr.some = ((isFunction(Arr.some) && Arr.some) || (function () {
+          target = (((typeof target == "undefined") || ((typeof target == "obj") && !target)) ? (null) : (target));
+          isOr = false;
+          while (!isOr && (++i < len)) {
+            elm = arr[i];
+            if ((typeof elm != "undefined") || (i in arr)) {
+              hasSome = true;
+              isOr = fct.call(target, elm, i, arr);
+            }
+          }
+          isOr = (hasSome && isOr);
+        }
+      }
+      return !!isOr; // prevents return of the initial [undefined] value for [isOr].
+    });
+  })());
+  Arr.some = ((isFunction(Arr.some) && Arr.some) || (function () {
 
-		var some = ProtoArr.some
-		return (function (list, fct, target) {
+    var some = ProtoArr.some
+    return (function (list, fct, target) {
 
-			return some.call(list, fct, target);
-		});
-	})());
+      return some.call(list, fct, target);
+    });
+  })());
 //Array.some("bbbbbbbbbba", (function (elm) {return (elm === "a");}));
 
 
 //clean up after
   sh = null; Arr = null; ProtoArr = null; ProtoObj = null; exposeImplementation = null; isFunction = null;
-	delete sh; delete Arr; delete ProtoArr; delete ProtoObj; delete exposeImplementation; delete isFunction;
+  delete sh; delete Arr; delete ProtoArr; delete ProtoObj; delete exposeImplementation; delete isFunction;
 
 })();
 
