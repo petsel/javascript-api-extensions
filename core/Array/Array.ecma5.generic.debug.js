@@ -140,7 +140,7 @@
     //var isOr, arr = ((isArray(this) && this) || makeArray(this) || []); // fail silently
       if (typeof fct == "function") {
 
-        var elm, i = -1, len = arr.length, hasSome = false;// [hasSome] : countercheck if at least one element passes the [fct]-filter e.g. in case of all list entries were [undefined] values.
+        var elm, i = -1, len = arr.length, hasSome = false; // [hasSome] : countercheck if at least one element passes the [fct]-filter e.g. in case of all list entries were [undefined] values.
         if (len >= 1) {
 
           target = (((typeof target == "undefined") || ((typeof target == "obj") && !target)) ? (null) : (target));
@@ -169,7 +169,7 @@
     //var isOr, arr = ((isArray(list) && list) || makeArray(list) || []); // fail silently
       if (typeof fct == "function") {
 
-        var elm, i = -1, len = arr.length, hasSome = false;// [hasSome] : countercheck if at least one element passes the [fct]-filter e.g. in case of all list entries were [undefined] values.
+        var elm, i = -1, len = arr.length, hasSome = false; // [hasSome] : countercheck if at least one element passes the [fct]-filter e.g. in case of all list entries were [undefined] values.
         if (len >= 1) {
 
           target = (((typeof target == "undefined") || ((typeof target == "obj") && !target)) ? (null) : (target));
@@ -190,6 +190,110 @@
     });
   })();
 //Array.some("bbbbbbbbbba", (function (elm) {return (elm === "a");}));
+
+
+  ProtoArr.map = (function () {
+
+    var isArray = Arr.isArray, makeArray = Arr.make;
+    return (function (fct, target) {
+
+      var arr = [], list = ((isArray(this) && this) || makeArray(this) || throwListDelegationTypeError());
+    //var arr = [], list = ((isArray(this) && this) || makeArray(this) || []); // fail silently
+      if (typeof fct == "function") {
+
+        target = (((typeof target == "undefined") || ((typeof target == "obj") && !target)) ? (null) : (target));
+        var elm, i = -1, len = list.length;
+        while (++i < len) {
+          elm = list[i];
+          if ((typeof elm != "undefined") || (i in list)) {
+            arr[i] = fct.call(target, elm, i, list);
+          } else {
+            arr[i] = elm;
+          }
+        }
+      } else {
+        throwFirstArgumentFunctionTypeError();
+      }
+      return arr;
+    });
+  })();
+  Arr.map = (function () {
+
+    var isArray = Arr.isArray, makeArray = Arr.make;
+    return (function (list, fct, target) {
+
+      var arr = []; list = ((isArray(list) && list) || makeArray(list) || throwListTypeError());
+    //var arr = []; list = ((isArray(list) && list) || makeArray(list) || []); // fail silently
+      if (typeof fct == "function") {
+
+        target = (((typeof target == "undefined") || ((typeof target == "obj") && !target)) ? (null) : (target));
+        var elm, i = -1, len = list.length;
+        while (++i < len) {
+          elm = list[i];
+          if ((typeof elm != "undefined") || (i in list)) {
+            arr[i] = fct.call(target, elm, i, list);
+          } else {
+            arr[i] = elm;
+          }
+        }
+      } else {
+        throwSecondArgumentFunctionTypeError();
+      }
+      return arr;
+    });
+  })();
+
+
+  ProtoArr.filter = (function () {
+
+    var isArray = Arr.isArray, makeArray = Arr.make;
+    return (function (fct, target) {
+
+      var arr = [], list = ((isArray(this) && this) || makeArray(this) || throwListDelegationTypeError());
+    //var arr = [], list = ((isArray(this) && this) || makeArray(this) || []); // fail silently
+      if (typeof fct == "function") {
+
+        target = (((typeof target == "undefined") || ((typeof target == "obj") && !target)) ? (null) : (target));
+        var elm, i = -1, len = list.length;
+        while (++i < len) {
+          elm = list[i];
+          if ((typeof elm != "undefined") || (i in list)) {
+            if (fct.call(target, elm, i, list)) {
+              arr.push(elm);
+            }
+          }
+        }
+      } else {
+        throwFirstArgumentFunctionTypeError();
+      }
+      return arr;
+    });
+  })();
+  Arr.filter = (function () {
+
+    var isArray = Arr.isArray, makeArray = Arr.make;
+    return (function (list, fct, target) {
+
+      var arr = []; list = ((isArray(list) && list) || makeArray(list) || throwListTypeError());
+    //var arr = []; list = ((isArray(list) && list) || makeArray(list) || []); // fail silently
+      if (typeof fct == "function") {
+
+        target = (((typeof target == "undefined") || ((typeof target == "obj") && !target)) ? (null) : (target));
+        var elm, i = -1, len = list.length;
+        while (++i < len) {
+          elm = list[i];
+          if ((typeof elm != "undefined") || (i in list)) {
+            if (fct.call(target, elm, i, list)) {
+              arr.push(elm);
+            }
+          }
+        }
+      } else {
+        throwSecondArgumentFunctionTypeError();
+      }
+      return arr;
+    });
+  })();
 
 
 })();
