@@ -164,7 +164,7 @@
   })());
 
 
-  ProtoArr.every = ((isFunction(ProtoArr.every) && ProtoArr.every) || (function () {
+  ProtoArr.every = ((isFunction(ProtoArr.every) && ProtoArr.every) || (function () { // [http://apidock.com/ruby/Enumerable/all%3F]
 
     var isArray = Arr.isArray, makeArray = Arr.make;
     return (function (fct, target) {
@@ -201,7 +201,7 @@
 //Array.every("aaaaaaaaaaa", (function (elm) {return (elm === "a");}));
 
 
-  ProtoArr.some = ((isFunction(ProtoArr.some) && ProtoArr.some) || (function () {
+  ProtoArr.some = ((isFunction(ProtoArr.some) && ProtoArr.some) || (function () { // [http://apidock.com/ruby/Enumerable/any%3F]
 
     var isArray = Arr.isArray, makeArray = Arr.make;
     return (function (fct, target) {
@@ -238,7 +238,7 @@
 //Array.some("bbbbbbbbbba", (function (elm) {return (elm === "a");}));
 
 
-  ProtoArr.map = ((isFunction(ProtoArr.map) && ProtoArr.map) || (function () {
+  ProtoArr.map = ((isFunction(ProtoArr.map) && ProtoArr.map) || (function () { // [http://apidock.com/ruby/Enumerable/map] - [http://apidock.com/ruby/Enumerable/collect]
 
     var isArray = Arr.isArray, makeArray = Arr.make;
     return (function (fct, target) {
@@ -270,7 +270,7 @@
   })());
 
 
-  ProtoArr.filter = ((isFunction(ProtoArr.filter) && ProtoArr.filter) || (function () {
+  ProtoArr.filter = ((isFunction(ProtoArr.filter) && ProtoArr.filter) || (function () { // [http://apidock.com/ruby/Enumerable/select] - [http://apidock.com/ruby/Enumerable/find_all] - [http://apidock.com/ruby/Enumerable/find]
 
     var isArray = Arr.isArray, makeArray = Arr.make;
     return (function (fct, target) {
@@ -302,7 +302,7 @@
   })());
 
 
-  ProtoArr.reduce = ((isFunction(ProtoArr.reduce) && ProtoArr.reduce) || (function () {
+  ProtoArr.reduce = ((isFunction(ProtoArr.reduce) && ProtoArr.reduce) || (function () { // [http://apidock.com/ruby/Enumerable/reduce]
 
     var isArray = Arr.isArray, makeArray = Arr.make;
     return (function (fct, val) {
@@ -406,7 +406,7 @@
   })());
 
 
-  ProtoArr.indexOf = ((isFunction(ProtoArr.indexOf) && ProtoArr.indexOf) || (function () {
+  ProtoArr.indexOf = ((isFunction(ProtoArr.indexOf) && ProtoArr.indexOf) || (function () { // [http://apidock.com/ruby/Array/index]
 
     var isArray = Arr.isArray, makeArray = Arr.make, global = sh;
     return (function (obj, idx) {
@@ -441,7 +441,7 @@
   })());
 
 
-  ProtoArr.lastIndexOf = ((isFunction(ProtoArr.lastIndexOf) && ProtoArr.lastIndexOf) || (function () {
+  ProtoArr.lastIndexOf = ((isFunction(ProtoArr.lastIndexOf) && ProtoArr.lastIndexOf) || (function () { // [http://apidock.com/ruby/Array/rindex]
 
     var isArray = Arr.isArray, makeArray = Arr.make, global = sh;
     return (function (obj, idx) {
