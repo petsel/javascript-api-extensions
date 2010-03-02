@@ -124,6 +124,62 @@
   })();
 
 
+  ProtoArr.remove = (function () { // mutating for native arrays - non mutating for all other list like structures of course.
+
+    var isArray = Arr.isArray, makeArray = Arr.make, splice = ProtoArr.splice;
+    return (function (obj/*[, obj2[, obj3[, ...]]]*/) {
+
+      var lenArgs, lenList/*, obj*/, k, i = -1, args = arguments, list = ((isArray(this) && this) || makeArray(this));
+      if (list) {
+
+        lenArgs = args.length;
+        lenList = list.length;
+
+        while (++i < lenArgs) {
+          obj = args[i];
+          k = -1;
+          while (++k < lenList) {
+            if (list[k] === obj) {
+
+              list.splice(k, 1);
+              --lenList;
+              --k;
+            }
+          }
+        }
+      }
+    //if (typeof this.remove == "function") {
+      if (this.remove === args.callee) {
+        splice.apply(this, [0, lenList].concat(list)); // in order to be mutating for native arrays
+        list = this;
+      }
+      return list;
+    });
+  })();
+  Arr.remove = (function () { // non mutating for passed native arrays.
+
+    var makeArray = Arr.make, remove = ProtoArr.remove;
+    return (function (list, obj/*[, obj2[, obj3[, ...]]]*/) {
+
+      var args = makeArray(arguments);/* list = makeArray(args.shift());*/ // non mutating for passed native arrays.
+    //return remove.apply(list, args);
+      return remove.apply(makeArray(args.shift()), args);
+    });
+  })();/*
+//to be pasted into [http://jconsole.com/]
+  var time = (new Date);
+  print(Array.remove.apply(null, [document.getElementsByTagName("*")].concat(Array.make(document.getElementsByTagName("div")))));
+  time = ((new Date) - time);
+  print(time + " msec");
+
+  var arr = [1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,0,0,0,0,0,0,0];
+  print(Array.remove(arr, 0, 2, 4, 6, 8));
+  print(arr);
+  print(Array.remove(arr, 0, 2, 4, 6, 8).remove(1, 5, 9));
+  print(arr);
+*/
+
+
 })();/*
 
 //module base [Array.make.detect]   - 1.852 byte
