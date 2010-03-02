@@ -215,7 +215,8 @@
           while (i < len) { // reduce process
             elm = list[i];
             if ((typeof elm != "undefined") || (i in list)) {
-              val = fct.call(null, val, elm, i, list);
+            //val = fct.call(null, val, elm, i, list);
+              val = fct(val, elm, i, list);
             }
             ++i;
           }
@@ -279,7 +280,8 @@
           while (i >= 0) { // reduce process
             elm = list[i];
             if ((typeof elm != "undefined") || (i in list)) {
-              val = fct.call(null, val, elm, i, list);
+            //val = fct.call(null, val, elm, i, list);
+              val = fct(val, elm, i, list);
             }
             --i;
           }

@@ -63,7 +63,7 @@
       return !!isMember; // prevents return of the initial [undefined] value for [isMember].
     });
   })();/*
-					[containsFilter] already gets covered by [some]
+          [containsFilter] already gets covered by [some]
 
   ProtoArr.containsFilter = (function () {
 
@@ -74,15 +74,15 @@
     //var len, elm, isMember, i = -1, list = ((isArray(this) && this) || makeArray(this) || []); // fail silently
       if (typeof fct == "function") {
 
-				len = list.length;
-				while (++i < len) {
-					elm = list[i];
-					if (((typeof elm != "undefined") || (i in list)) && fct.call(null, elm, idx, list)) {
-						isMember = true;
-						break;
-					}
-				}
-			} else {
+        len = list.length;
+        while (++i < len) {
+          elm = list[i];
+          if (((typeof elm != "undefined") || (i in list)) && fct.call(null, elm, idx, list)) {
+            isMember = true;
+            break;
+          }
+        }
+      } else {
         throwFirstArgumentFunctionTypeError();
       }
       return !!isMember; // prevents return of the initial [undefined] value for [isMember].
@@ -97,15 +97,15 @@
     //var len, elm, isMember, i = -1; list = ((isArray(this) && this) || makeArray(this) || []); // fail silently
       if (typeof fct == "function") {
 
-				len = list.length;
-				while (++i < len) {
-					elm = list[i];
-					if (((typeof elm != "undefined") || (i in list)) && (elm === obj)) {
-						isMember = true;
-						break;
-					}
-				}
-			} else {
+        len = list.length;
+        while (++i < len) {
+          elm = list[i];
+          if (((typeof elm != "undefined") || (i in list)) && (elm === obj)) {
+            isMember = true;
+            break;
+          }
+        }
+      } else {
         throwSecondArgumentFunctionTypeError();
       }
       return !!isMember; // prevents return of the initial [undefined] value for [isMember].
@@ -122,21 +122,22 @@
     //var len, elm, isMember, list = ((isArray(this) && this) || makeArray(this) || []); // fail silently
       if (typeof fct == "function") {
 
-				len = list.length;
+        len = list.length;
 
-				idx = global.parseInt(global.Number(idx), 10);
-				idx = ((global.isFinite(idx) && idx) || 0);
-				idx = (((idx < 0) && global.Math.max(0, (len + idx))) || idx); // [https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array/indexOf#Parameters]
+        idx = global.parseInt(global.Number(idx), 10);
+        idx = ((global.isFinite(idx) && idx) || 0);
+        idx = (((idx < 0) && global.Math.max(0, (len + idx))) || idx); // [https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array/indexOf#Parameters]
 
-				while (idx < len) {
-					elm = list[idx];
-					if (((typeof elm != "undefined") || (idx in list)) && fct.call(null, elm, idx, list)) {
-						isMember = true;
-						break;
-					}
-					++idx;
-				}
-			} else {
+        while (idx < len) {
+          elm = list[idx];
+        //if (((typeof elm != "undefined") || (idx in list)) && fct.call(null, elm, idx, list)) {
+          if (((typeof elm != "undefined") || (idx in list)) && fct(elm, idx, list)) {
+            isMember = true;
+            break;
+          }
+          ++idx;
+        }
+      } else {
         throwFirstArgumentFunctionTypeError();
       }
       return ((isMember) ? (idx) : (-1));
@@ -151,21 +152,22 @@
     //var len, elm, isMember; list = ((isArray(list) && list) || makeArray(list) || []); // fail silently
       if (typeof fct == "function") {
 
-				len = list.length;
+        len = list.length;
 
-				idx = global.parseInt(global.Number(idx), 10);
-				idx = ((global.isFinite(idx) && idx) || 0);
-				idx = (((idx < 0) && global.Math.max(0, (len + idx))) || idx); // [https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array/indexOf#Parameters]
+        idx = global.parseInt(global.Number(idx), 10);
+        idx = ((global.isFinite(idx) && idx) || 0);
+        idx = (((idx < 0) && global.Math.max(0, (len + idx))) || idx); // [https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array/indexOf#Parameters]
 
-				while (idx < len) {
-					elm = list[idx];
-					if (((typeof elm != "undefined") || (idx in list)) && fct.call(null, elm, idx, list)) {
-						isMember = true;
-						break;
-					}
-					++idx;
-				}
-			} else {
+        while (idx < len) {
+          elm = list[idx];
+        //if (((typeof elm != "undefined") || (idx in list)) && fct.call(null, elm, idx, list)) {
+          if (((typeof elm != "undefined") || (idx in list)) && fct(elm, idx, list)) {
+            isMember = true;
+            break;
+          }
+          ++idx;
+        }
+      } else {
         throwSecondArgumentFunctionTypeError();
       }
       return ((isMember) ? (idx) : (-1));
@@ -182,22 +184,23 @@
     //var len, elm, isMember, list = ((isArray(this) && this) || makeArray(this) || []); // fail silently
       if (typeof fct == "function") {
 
-				len = list.length;
+        len = list.length;
 
-				idx = global.parseInt(global.Number(idx), 10);
-				idx = ((global.isFinite(idx) && idx) || len);
-				idx = (((idx < 0) && global.Math.max(0, (len + idx))) || idx);
-				idx = (((idx >= len) && (len - 1)) || idx); // [https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array/lastIndexOf#Parameters]
+        idx = global.parseInt(global.Number(idx), 10);
+        idx = ((global.isFinite(idx) && idx) || len);
+        idx = (((idx < 0) && global.Math.max(0, (len + idx))) || idx);
+        idx = (((idx >= len) && (len - 1)) || idx); // [https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array/lastIndexOf#Parameters]
 
-				while (idx > -1) {
-					elm = list[idx];
-					if (((typeof elm != "undefined") || (idx in list)) && fct.call(null, elm, idx, list)) {
-						isMember = true;
-						break;
-					}
-					--idx;
-				}
-			} else {
+        while (idx > -1) {
+          elm = list[idx];
+        //if (((typeof elm != "undefined") || (idx in list)) && fct.call(null, elm, idx, list)) {
+          if (((typeof elm != "undefined") || (idx in list)) && fct(elm, idx, list)) {
+            isMember = true;
+            break;
+          }
+          --idx;
+        }
+      } else {
         throwFirstArgumentFunctionTypeError();
       }
       return ((isMember) ? (idx) : (-1));
@@ -212,22 +215,23 @@
     //var len, elm, isMember; list = ((isArray(list) && list) || makeArray(list) || []); // fail silently
       if (typeof fct == "function") {
 
-				len = list.length;
+        len = list.length;
 
-				idx = global.parseInt(global.Number(idx), 10);
-				idx = ((global.isFinite(idx) && idx) || len);
-				idx = (((idx < 0) && global.Math.max(0, (len + idx))) || idx);
-				idx = (((idx >= len) && (len - 1)) || idx); // [https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array/lastIndexOf#Parameters]
+        idx = global.parseInt(global.Number(idx), 10);
+        idx = ((global.isFinite(idx) && idx) || len);
+        idx = (((idx < 0) && global.Math.max(0, (len + idx))) || idx);
+        idx = (((idx >= len) && (len - 1)) || idx); // [https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/Array/lastIndexOf#Parameters]
 
-				while (idx > -1) {
-					elm = list[idx];
-					if (((typeof elm != "undefined") || (idx in list)) && fct.call(null, elm, idx, list)) {
-						isMember = true;
-						break;
-					}
-					--idx;
-				}
-			} else {
+        while (idx > -1) {
+          elm = list[idx];
+        //if (((typeof elm != "undefined") || (idx in list)) && fct.call(null, elm, idx, list)) {
+          if (((typeof elm != "undefined") || (idx in list)) && fct(elm, idx, list)) {
+            isMember = true;
+            break;
+          }
+          --idx;
+        }
+      } else {
         throwSecondArgumentFunctionTypeError();
       }
       return ((isMember) ? (idx) : (-1));
