@@ -18,11 +18,51 @@
   throwListTypeError = (function () {throw (new TypeError("1st argument needs to be some kind of list."));}),
 
   throwFirstArgumentFunctionTypeError = (function () {throw (new TypeError("1st argument needs to be a function type."));}),
-  throwSecondArgumentFunctionTypeError = (function () {throw (new TypeError("2nd argument needs to be a function type."));}),
+  throwSecondArgumentFunctionTypeError = (function () {throw (new TypeError("2nd argument needs to be a function type."));});
 
   if (!Arr || !isFunction(Arr.isArray) || !isFunction(Arr.make)) {
     throw (new ReferenceError("All [[Array]] implementations badly require the presence of the [[Array]] extensions module base [Array.make.detect]."));
   }
+
+
+  ProtoArr.isEmpty = (function () {
+
+    var isArray = Arr.isArray, makeArray = Arr.make;
+    return (function () {
+
+      var len, elm, isEmpty = true, i = -1, list = ((isArray(this) && this) || makeArray(this) || throwListDelegationTypeError());
+    //var len, elm, isEmpty = true, i = -1, list = ((isArray(this) && this) || makeArray(this) || []); // fail silently
+
+      len = list.length;
+      while (++i < len) {
+        elm = list[i];
+        if (elm || (typeof elm != "undefined") || (i in list)) {
+          isEmpty = false;
+          break;
+        }
+      }
+      return isEmpty;
+    });
+  })();
+  Arr.isEmpty = (function () {
+
+    var isArray = Arr.isArray, makeArray = Arr.make;
+    return (function (list) {
+
+      var len, elm, isEmpty = true, i = -1; list = ((isArray(list) && list) || makeArray(list) || throwListTypeError());
+    //var len, elm, isEmpty = true, i = -1; list = ((isArray(list) && list) || makeArray(list) || []); // fail silently
+
+      len = list.length;
+      while (++i < len) {
+        elm = list[i];
+        if (elm || (typeof elm != "undefined") || (i in list)) {
+          isEmpty = false;
+          break;
+        }
+      }
+      return isEmpty;
+    });
+  })();
 
 
   ProtoArr.contains/* = ProtoArr.exists*/ = (function () { // [http://apidock.com/ruby/Array/include%3F] - [include?] as in Ruby or [exists] as in [Joose.A.exists]
@@ -49,8 +89,8 @@
     var isArray = Arr.isArray, makeArray = Arr.make;
     return (function (list, obj) {
 
-      var len, elm, isMember, i = -1; list = ((isArray(this) && this) || makeArray(this) || throwListTypeError());
-    //var len, elm, isMember, i = -1; list = ((isArray(this) && this) || makeArray(this) || []); // fail silently
+      var len, elm, isMember, i = -1; list = ((isArray(list) && list) || makeArray(list) || throwListTypeError());
+    //var len, elm, isMember, i = -1; list = ((isArray(list) && list) || makeArray(list) || []); // fail silently
 
       len = list.length;
       while (++i < len) {
@@ -93,8 +133,8 @@
     var isArray = Arr.isArray, makeArray = Arr.make;
     return (function (list, fct) {
 
-      var len, elm, isMember, i = -1; list = ((isArray(this) && this) || makeArray(this) || throwListTypeError());
-    //var len, elm, isMember, i = -1; list = ((isArray(this) && this) || makeArray(this) || []); // fail silently
+      var len, elm, isMember, i = -1; list = ((isArray(list) && list) || makeArray(list) || throwListTypeError());
+    //var len, elm, isMember, i = -1; list = ((isArray(list) && list) || makeArray(list) || []); // fail silently
       if (typeof fct == "function") {
 
         len = list.length;
@@ -237,6 +277,88 @@
       return ((isMember) ? (idx) : (-1));
     });
   })();
+
+
+  ProtoArr.remove = (function () { // mutating for native arrays - non mutating for all other list like structures of course.
+
+    var isArray = Arr.isArray, makeArray = Arr.make, splice = ProtoArr.splice;
+    return (function (obj/*[, obj2[, obj3[, ...]]]*/) {
+
+      var lenArgs, lenList/*, obj*/, k, i = -1, args = arguments, list = ((isArray(this) && this) || makeArray(this) || throwListDelegationTypeError());
+    //var lenArgs, lenList/*, obj*/, k, i = -1, args = arguments, list = ((isArray(this) && this) || makeArray(this) || []); // fail silently
+
+      lenArgs = args.length;
+      lenList = list.length;
+
+      while (++i < lenArgs) {
+        obj = args[i];
+        k = -1;
+        while (++k < lenList) {
+          if (list[k] === obj) {
+
+            list.splice(k, 1);
+            --lenList;
+            --k;
+          }
+        }
+      }/*
+      list.unshift(lenList); list.unshift(0);
+    //or
+      list = [0, lenList].concat(list);
+    */
+
+    //if (typeof this.remove == "function") {
+      if (this.remove === args.callee) {
+        splice.apply(this, [0, lenList].concat(list)); // in order to be mutating for native arrays
+        list = this;
+      }
+      return list;
+    });
+  })();/*
+//to be pasted into [http://jconsole.com/]
+  var time = (new Date);
+  print(Array.prototype.remove.apply(document.getElementsByTagName("*"), Array.make(document.getElementsByTagName("div"))));
+  time = ((new Date) - time);
+  print(time + " msec");
+*/
+  Arr.remove = (function () { // non mutating for passed native arrays.
+
+    var makeArray = Arr.make, splice = ProtoArr.splice;
+    return (function (list, obj/*[, obj2[, obj3[, ...]]]*/) {
+
+      var lenArgs, lenList/*, obj*/, k, i = -1, args = makeArray(arguments); list = (makeArray(args.shift()) || throwListTypeError()); // non mutating for passed native arrays.
+    //var lenArgs, lenList/*, obj*/, k, i = -1, args = makeArray(arguments); list = (makeArray(args.shift()) || []); // fail silently
+
+      lenArgs = args.length;
+      lenList = list.length;
+
+      while (++i < lenArgs) {
+        obj = args[i];
+        k = -1;
+        while (++k < lenList) {
+          if (list[k] === obj) {
+
+            list.splice(k, 1);
+            --lenList;
+            --k;
+          }
+        }
+      }
+      return list; // non mutating for passed native arrays.
+    });
+  })();/*
+//to be pasted into [http://jconsole.com/]
+  var time = (new Date);
+  print(Array.remove.apply(null, [document.getElementsByTagName("*")].concat(Array.make(document.getElementsByTagName("div")))));
+  time = ((new Date) - time);
+  print(time + " msec");
+
+  var arr = [1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,0,0,0,0,0,0,0];
+  print(Array.remove(arr, 0, 2, 4, 6, 8));
+  print(arr);
+  print(Array.remove(arr, 0, 2, 4, 6, 8).remove(1, 5, 9));
+  print(arr);
+*/
 
 
 })();/*
