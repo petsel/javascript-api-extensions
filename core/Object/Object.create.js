@@ -35,8 +35,8 @@
 - packed                      - 360 byte
 (function(){var global=this,Obj=global.Object,test={proof:{}};Obj.create=(((typeof Obj.create=="function")&&(Obj.create(test).proof===test.proof)&&Obj.create)||(function(blueprint){var GreenBody=(function(){});GreenBody.prototype=blueprint;return(new GreenBody)}));test=Obj=global=null;delete test;delete Obj;delete global;delete arguments.callee}).call(null);
 
-- packed / shrinked           - 271 byte
-(function(){var c=this,e=c.Object,d={proof:{}};e.create=(((typeof e.create=="function")&&(e.create(d).proof===d.proof)&&e.create)||(function(a){var b=(function(){});b.prototype=a;return(new b)}));d=e=c=null;delete d;delete e;delete c;delete arguments.callee}).call(null);
+- packed / shrinked           - 300 byte
+(function(){var c=this,Obj=c.Object,test={proof:{}};Obj.create=(((typeof Obj.create=="function")&&(Obj.create(test).proof===test.proof)&&Obj.create)||(function(a){var b=(function(){});b.prototype=a;return(new b)}));test=Obj=c=null;delete test;delete Obj;delete c;delete arguments.callee}).call(null);
 
 
 */
