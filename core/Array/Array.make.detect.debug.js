@@ -26,9 +26,49 @@
 (function () {
 
 
-  var sh/*global*/ = ((this && (this.window === this) && /*this.*/window) || this), // "scripting host" or "global object"
+  var sh/*global*/ = this, // "scripting host" or "global object"
 
-  Arr = sh.Array/*, Obj = sh.Object*/, ProtoArr = Arr.prototype, ProtoObj = sh.Object.prototype, exposeImplementation = ProtoObj.toString,
+  Arr = sh.Array/*,
+  Obj = sh.Object*/,
+  ArrProto = Arr.prototype,
+  ObjProto = sh.Object.prototype,
+
+  regXBaseClassObject = (/^\[object\s+Object\]$/),
+  regXBaseClassArguments = (/^\[object\s+Arguments\]$/),
+
+  propertyIsEnumerable = (function () {
+
+    var propertyIsEnumerable;
+    try {
+      ObjProto.propertyIsEnumerable.call(null, "length");
+
+      propertyIsEnumerable = (function (isEnumerable) {
+        return (function (obj, key) {
+
+          return isEnumerable.call(obj, key);
+        });
+      })(ObjProto.propertyIsEnumerable);
+
+    } catch (exc) { // [exc]::[Error]
+
+      propertyIsEnumerable = (function (isEnumerable) {
+        return (function (obj, key) {
+
+          var isEnum;
+          try {
+            isEnum = isEnumerable.call(obj, key);
+          } catch (exc) {
+          //isEnum = false;
+            isEnum = true; /* due to [propertyIsEnumerable]'s special internal use within client/js-egine specific [isArgumentsArray] method */
+          }
+          return isEnum;
+        });
+      })(ObjProto.propertyIsEnumerable);
+    }
+    return propertyIsEnumerable;
+  })(),
+
+  exposeImplementation = ObjProto.toString,
 
   isFunction = (((typeof sh.isFunction == "function") && sh.isFunction) || (function (obj) {return (typeof obj == "function");}));
 /*
@@ -43,39 +83,44 @@
 */
 
 
-  Arr.isArray = sh.isArray = (
+  Arr.isArray/* = sh.isArray*/ = (
 
     (isFunction(Arr.isArray) && Arr.isArray) ||
     (isFunction(sh.isArray) && sh.isArray) ||
 
-    (function () { // equal to : Arr.isArray = sh.isArray = (function () { ... });
-
-      var regXBaseClass = (/^\[object\s+Array\]$/), expose = exposeImplementation;
+    (function (regXBaseClass, expose) { // equal to : Arr.isArray = sh.isArray = (function () { ... });
       return (function (obj/*:[object|value]*/) {
 
         return regXBaseClass.test(expose.call(obj));
       });
-    })()
+    })((/^\[object\s+Array\]$/), exposeImplementation)
   );
 
 
-  Arr.isArgumentsArray = (
+  Arr.isArgumentsArray/* = sh.isArgumentsArray*/ = (
 
     (isFunction(Arr.isArgumentsArray) && Arr.isArgumentsArray) ||
-    (function () {
+    (isFunction(sh.isArgumentsArray) && sh.isArgumentsArray) ||
 
-      var isArguments, regXBaseClass = (/^\[object\s+Object\]$/), expose = exposeImplementation, isEnumerable = ProtoObj.propertyIsEnumerable;
-      try {
-        isEnumerable.call(sh, "length");
-        isArguments = (function (obj/*:[object|value]*/) {
+    (function () { // equal to : Arr.isArgumentsArray = sh.isArgumentsArray = (function () { ... });
+      var isArguments;
+      if ((function () {return regXBaseClassArguments.test(exposeImplementation.call(arguments));})()) {
 
-          return (regXBaseClass.test(expose.call(obj)) && !!obj && (typeof obj.length == "number") && !isEnumerable.call(obj, "length"));
-        });
-      } catch (exc) { // [exc]::[Error]
-        isArguments = (function (obj/*:[object|value]*/) {
+        isArguments = (function (regXBaseClass, expose) {
+          return (function (obj/*:[object|value]*/) {
 
-          return (regXBaseClass.test(expose.call(obj)) && !!obj && (typeof obj.length == "number") && !(function (elm) {var isEnum;try {isEnum = isEnumerable.call(elm, "length");} catch (exc) {isEnum = true;}return isEnum;})(obj));
-        });
+            return regXBaseClass.test(expose.call(obj));
+          });
+        })(regXBaseClassArguments, exposeImplementation);
+
+      } else {
+
+        isArguments = (function (regXBaseClass, expose, isFinite, isEnumerable) {
+          return (function (obj/*:[object|value]*/) {
+
+            return (regXBaseClass.test(expose.call(obj)) && !!obj && (typeof obj.length == "number") && isFinite(obj.length) && !isEnumerable(obj, "length"));
+          });
+        })(regXBaseClassObject, exposeImplementation, sh.isFinite, propertyIsEnumerable);
       }
       return isArguments;
     })()
@@ -95,7 +140,7 @@
 
     var make, arr, str, doc = sh.document, global = sh,
     all = ((doc && isFunction(doc.getElementsByTagName) && doc.getElementsByTagName("*")) || []),
-    slice = ProtoArr.slice,
+    slice = ArrProto.slice,
     isArguments = Arr.isArgumentsArray,
     isArray = Arr.isArray,
     isString = (
@@ -190,10 +235,17 @@
 
 
 //clean up after
-  sh = null; Arr = null; ProtoArr = null; ProtoObj = null; exposeImplementation = null; isFunction = null;
-  delete sh; delete Arr; delete ProtoArr; delete ProtoObj; delete exposeImplementation; delete isFunction;
+  isFunction = exposeImplementation = propertyIsEnumerable = null;
+  regXBaseClassArguments = regXBaseClassObject = null;
+  ObjProto = ArrProto = Arr = sh = null;
 
-})();
+  delete isFunction; delete exposeImplementation; delete propertyIsEnumerable;
+  delete regXBaseClassArguments; delete regXBaseClassObject;
+  delete ObjProto; delete ArrProto; delete Arr; delete sh;
+
+
+  delete arguments.callee;
+}).call(null/*does force the internal [this] context pointing to the [global] object*/);
 
 
 
