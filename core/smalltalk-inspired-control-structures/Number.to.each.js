@@ -1,4 +1,4 @@
-﻿/*
+/*
   This new [Number] iteration with [Number.to( ... ).each] was as much inspired by
   Smalltalk as it had been before with the recently implemented [Number.times] iterator.
 
@@ -8,188 +8,115 @@
     DE: [http://de.wikipedia.org/wiki/Smalltalk-80_(Programmiersprache)#Schleifen]
 
   for a quick countercheck paste code into [http://jconsole.com/]:
-*/ /*
-
-first try:
-
-Number.Iterator = (function () {
-
-//[each], [go], [does], [todo], [serve] or [serves] because [do] is an reserved word and already in use as part of the do-while iterator statement.
-  var each = (function (from, to, fct, target) {
-
-    var idx = -1, count, len;
-    if (from <= to) {
-
-      count = (from - 1);
-      len = (to - count);
-
-      while (++idx < len) {
-      //arguments order of callback function sticks closely/strictly to that one of [Number.times] but appends the arguments array by "count", "from" and "to".
-        fct.call(target, idx, len, fct, ++count, from, to);
-      }
-    } else {
-
-      count = (from + 1);
-      len = Math.abs(to - count);
-
-      while (++idx < len) {
-      //arguments order of callback function sticks closely/strictly to that one of [Number.times] but appends the arguments array by "count", "from" and "to".
-        fct.call(target, idx, len, fct, --count, from, to);
-      }
-    }
-  }),
-  getNumber = (function (num) {
-
-    num = Number(num);
-  //return ((isFinite(num) && Math.floor(num)) || -1); // does not detect cero values.
-
-    if (isFinite(num)) {
-      num = Math.floor(num);
-    } else {
-      num = -1;
-    }
-    return num;
-  }),
-  NumberIterator = (function (startValue, endValue) {
-
-  //in almost every case the initial value was a primitive "number" or "string" value.
-    initialValue = startValue.valueOf();
-
-    startValue = getNumber(startValue);
-    endValue = getNumber(endValue);
-
-    this.valueOf = (function () {
-
-      return initialValue;
-    });
-    this.toString = (function () {
-
-      return String(initialValue);
-    }); / *
-
-  //[each], [go], [does], [todo], [serve] or [serves] because [do] is an reserved word and already in use as part of the do-while iterator statement.
-    this.each = (function (fct, target) {
-
-    //[each] might use the same callback-functionality as in [Number.times] or callback of [each] could be augmented in order to meet our needs.
-      (endValue + 1 - startValue).times(fct, target);
-      return initialValue;
-    }); * /
-
-  //[each], [go], [does], [todo], [serve] or [serves] because [do] is an reserved word and already in use as part of the do-while iterator statement.
-    this.each = (function (fct, target) {
-
-      each(startValue, endValue, fct, target);
-      return initialValue;
-    });
-  });
-
-  return NumberIterator;
-
-})();
-
-Number.prototype.to = String.prototype.to = (function (num) {
-
-//print("(typeof this) : " + (typeof this));
-  return (new Number.Iterator(this, num));
-});*/
+*/
 
 
-
-(function () { // anonymus application context
-
-
-//[sh] - scripting host.
-  var sh = ((this && (this.window === this) && /*this.*/window) || this),
+(function () {
+  var sh/*scripting_host|global_object*/ = this, Num = sh.Number, NumProto = Num.prototype, StrProto = sh.String.prototype,
 
 
 //[each], [go], [does], [todo], [serve] or [serves] because [do] is an reserved word and already in use as part of the do-while iterator statement.
-  each = (function (from, to, fct, target) {
+  each = (function (MATH_ABS) {
+    return (function (from, to, fct, target) {
 
-    var idx = -1, count, len;
-    if (from <= to) {
+      if (typeof fct == "function") {
+        target = (target || (((typeof target == "undefined") || (typeof target == "object")) ? null : target));
 
-      count = (from - 1);
-      len = (to - count);
+        var idx = -1, count, len;
+        if (from <= to) {
 
-      while (++idx < len) {
-      //arguments order of callback function sticks closely/strictly to that one of [Number.times] but appends the arguments array by "count", "from" and "to".
-        fct.call(target, idx, len, fct, ++count, from, to);
+          count = (from - 1);
+          len = (to - count);
+
+          while (++idx < len) {
+          //arguments order of callback function sticks closely/strictly to that one of [Number.times] but appends the arguments array by "count", "from" and "to".
+            fct.call(target, idx, len, fct, ++count, from, to);
+          }
+        } else {
+
+          count = (from + 1);
+          len = MATH_ABS(to - count);
+
+          while (++idx < len) {
+          //arguments order of callback function sticks closely/strictly to that one of [Number.times] but appends the arguments array by "count", "from" and "to".
+            fct.call(target, idx, len, fct, --count, from, to);
+          }
+        }
       }
-    } else {
+    });
+  })(sh.Math.abs),
 
-      count = (from + 1);
-      len = sh.Math.abs(to - count);
+  getNumber = (function (NUMBER, IS_FINITE, MATH_FLOOR) {
+    return (function (num) {
 
-      while (++idx < len) {
-      //arguments order of callback function sticks closely/strictly to that one of [Number.times] but appends the arguments array by "count", "from" and "to".
-        fct.call(target, idx, len, fct, --count, from, to);
+      num = NUMBER(num);
+    //return ((IS_FINITE(num) && MATH_FLOOR(num)) || -1); // does not detect cero values.
+
+      if (IS_FINITE(num)) {
+        num = MATH_FLOOR(num);
+      } else {
+        num = -1;
       }
-    }
-  }),
-  getNumber = (function (num) {
-
-    num = sh.Number(num);
-  //return ((sh.isFinite(num) && sh.Math.floor(num)) || -1); // does not detect cero values.
-
-    if (sh.isFinite(num)) {
-      num = sh.Math.floor(num);
-    } else {
-      num = -1;
-    }
-    return num;
-  }),
-  NumberIterator = (function (startValue, endValue) {
-
-  //in almost every case the initial value was a primitive "number" or "string" value.
-    initialValue = startValue.valueOf();
-
-    startValue = getNumber(startValue);
-    endValue = getNumber(endValue);
-
-    this.valueOf = (function () {
-
-      return initialValue;
+      return num;
     });
-    this.toString = (function () {
+  })(Num, sh.isFinite, sh.Math.floor),
 
-      return String(initialValue);
-    });/*
 
-  //[each], [go], [does], [todo], [serve] or [serves] because [do] is an reserved word and already in use as part of the do-while iterator statement.
-    this.each = (function (fct, target) {
+  NumberIterator = (function (EACH, GET_NUMBER, VALUE_OF) {
+    return (function (startValue, endValue) {
 
-    //[each] might use the same callback-functionality as in [Number.times] or callback of [each] could be augmented in order to meet our needs.
-      (endValue + 1 - startValue).times(fct, target);
-      return initialValue;
-    });*/
+    //in almost every case the initial value was a primitive "number" or "string" value.
+      initialValue = VALUE_OF.call(startValue).valueOf();
 
-  //[each], [go], [does], [todo], [serve] or [serves] because [do] is an reserved word and already in use as part of the do-while iterator statement.
-    this.each = (function (fct, target) {
+      startValue = GET_NUMBER(startValue);
+      endValue = GET_NUMBER(endValue);
 
-      each(startValue, endValue, fct, target);
-      return initialValue;
+      this.valueOf = (function () {
+        return initialValue;
+      });
+      this.toString = (function () {
+        return ("" + initialValue);
+      });
+
+    //[each], [go], [does], [todo], [serve] or [serves] because [do] is an reserved word and already in use as part of the do-while iterator statement.
+      this.each = (function (fct, target) {
+
+        EACH(startValue, endValue, fct, target);
+        return initialValue;
+      });
     });
-  });
+  })(each, getNumber, sh.Object.prototype.valueOf);
 
 
-  sh.Number.prototype.to = sh.String.prototype.to = (function (num) {
+  NumProto.to = StrProto.to = (function (NUMBER_ITERATOR) {
+    return (function (num) {
 
-  //print("(typeof this) : " + (typeof this));
-    return (new NumberIterator(this, num));
-  });
+    //print("(typeof this) : " + (typeof this));
+      return (new NUMBER_ITERATOR(this, num));
+    });
+  })(NumberIterator);
 
-})();/*
+
+  NumberIterator = getNumber = each = StrProto = NumProto = Num = sh = null;
+  delete NumberIterator; delete getNumber, delete each;
+  delete StrProto; delete NumProto; delete Num; delete sh;
+
+
+  delete arguments.callee;
+}).call(null/*does force the internal [this] context pointing to the [global] object*/);
+
+
+
+/*
 
 
   [http://closure-compiler.appspot.com/home]
 
-- Whitespace only - 861 byte :
-//(function(){var sh=this&&this.window===this&&window||this,each=function(from,to,fct,target){var idx=-1,count,len;if(from<=to){count=from-1;len=to-count;while(++idx<len)fct.call(target,idx,len,fct,++count,from,to)}else{count=from+1;len=sh.Math.abs(to-count);while(++idx<len)fct.call(target,idx,len,fct,--count,from,to)}},getNumber=function(num){num=sh.Number(num);if(sh.isFinite(num))num=sh.Math.floor(num);else num=-1;return num},NumberIterator=function(startValue,endValue){initialValue=startValue.valueOf();startValue=getNumber(startValue);endValue=getNumber(endValue);this.valueOf=function(){return initialValue};this.toString=function(){return String(initialValue)};this.each=function(fct,target){each(startValue,endValue,fct,target);return initialValue}};sh.Number.prototype.to=sh.String.prototype.to=function(num){return new NumberIterator(this,num)}})();
+- Whitespace only - 1.432 byte :
+(function(){var sh=this,Num=sh.Number,NumProto=Num.prototype,StrProto=sh.String.prototype,each=function(MATH_ABS){return function(from,to,fct,target){if(typeof fct=="function"){target=target||(typeof target=="undefined"||typeof target=="object"?null:target);var idx=-1,count,len;if(from<=to){count=from-1;len=to-count;while(++idx<len)fct.call(target,idx,len,fct,++count,from,to)}else{count=from+1;len=MATH_ABS(to-count);while(++idx<len)fct.call(target,idx,len,fct,--count,from,to)}}}}(sh.Math.abs),getNumber=function(NUMBER,IS_FINITE,MATH_FLOOR){return function(num){num=NUMBER(num);if(IS_FINITE(num))num=MATH_FLOOR(num);else num=-1;return num}}(Num,sh.isFinite,sh.Math.floor),NumberIterator=function(EACH,GET_NUMBER,VALUE_OF){return function(startValue,endValue){initialValue=VALUE_OF.call(startValue).valueOf();startValue=GET_NUMBER(startValue);endValue=GET_NUMBER(endValue);this.valueOf=function(){return initialValue};this.toString=function(){return""+initialValue};this.each=function(fct,target){EACH(startValue,endValue,fct,target);return initialValue}}}(each,getNumber,sh.Object.prototype.valueOf);NumProto.to=StrProto.to=function(NUMBER_ITERATOR){return function(num){return new NUMBER_ITERATOR(this,num)}}(NumberIterator);NumberIterator=getNumber=each=StrProto=NumProto=Num=sh=null;delete NumberIterator;delete getNumber,delete each;delete StrProto;delete NumProto;delete Num;delete sh;delete arguments.callee}).call(null);
 
-- Simple          - 576 byte :
-//(function(){var c=this&&this.window===this&&window||this,j=function(a,b,d,g){var h=-1,e,f;if(a<=b){e=a-1;for(f=b-e;++h<f;)d.call(g,h,f,d,++e,a,b)}else{e=a+1;for(f=c.Math.abs(b-e);++h<f;)d.call(g,h,f,d,--e,a,b)}},i=function(a){a=c.Number(a);return a=c.isFinite(a)?c.Math.floor(a):-1},k=function(a,b){initialValue=a.valueOf();a=i(a);b=i(b);this.valueOf=function(){return initialValue};this.toString=function(){return String(initialValue)};this.each=function(d,g){j(a,b,d,g);return initialValue}};c.Number.prototype.to=c.String.prototype.to=function(a){return new k(this,a)}})();
-
-- Advanced        - no success
+- Simple          -   879 byte :
+(function(){var e=this,j=e.Number,k=j.prototype,l=e.String.prototype,m=function(g){return function(b,d,a,c){if(typeof a=="function"){c=c||(typeof c=="undefined"||typeof c=="object"?null:c);var h=-1,f,i;if(b<=d){f=b-1;for(i=d-f;++h<i;)a.call(c,h,i,a,++f,b,d)}else{f=b+1;for(i=g(d-f);++h<i;)a.call(c,h,i,a,--f,b,d)}}}}(e.Math.abs),n=function(g,b,d){return function(a){a=g(a);return a=b(a)?d(a):-1}}(j,e.isFinite,e.Math.floor),o=function(g,b,d){return function(a,c){initialValue=d.call(a).valueOf();a=b(a);c=b(c);this.valueOf=function(){return initialValue};this.toString=function(){return""+initialValue};this.each=function(h,f){g(a,c,h,f);return initialValue}}}(m,n,e.Object.prototype.valueOf);k.to=l.to=function(g){return function(b){return new g(this,b)}}(o);o=n=m=l=k=j=e=null;delete o;delete n;delete m;delete l;delete k;delete j;delete e;delete arguments.callee}).call(null);
 
 
 */ /*
@@ -197,11 +124,11 @@ Number.prototype.to = String.prototype.to = (function (num) {
 
   [http://dean.edwards.name/packer/]
 
-- packed                      - 893 byte :
-//(function(){var sh=((this&&(this.window===this)&&window)||this),each=(function(from,to,fct,target){var idx=-1,count,len;if(from<=to){count=(from-1);len=(to-count);while(++idx<len){fct.call(target,idx,len,fct,++count,from,to)}}else{count=(from+1);len=sh.Math.abs(to-count);while(++idx<len){fct.call(target,idx,len,fct,--count,from,to)}}}),getNumber=(function(num){num=sh.Number(num);if(sh.isFinite(num)){num=sh.Math.floor(num)}else{num=-1}return num}),NumberIterator=(function(startValue,endValue){initialValue=startValue.valueOf();startValue=getNumber(startValue);endValue=getNumber(endValue);this.valueOf=(function(){return initialValue});this.toString=(function(){return String(initialValue)});this.each=(function(fct,target){each(startValue,endValue,fct,target);return initialValue})});sh.Number.prototype.to=sh.String.prototype.to=(function(num){return(new NumberIterator(this,num))})})();
+- packed                      - 1.472 byte :
+(function(){var sh=this,Num=sh.Number,NumProto=Num.prototype,StrProto=sh.String.prototype,each=(function(MATH_ABS){return(function(from,to,fct,target){if(typeof fct=="function"){target=(target||(((typeof target=="undefined")||(typeof target=="object"))?null:target));var idx=-1,count,len;if(from<=to){count=(from-1);len=(to-count);while(++idx<len){fct.call(target,idx,len,fct,++count,from,to)}}else{count=(from+1);len=MATH_ABS(to-count);while(++idx<len){fct.call(target,idx,len,fct,--count,from,to)}}}})})(sh.Math.abs),getNumber=(function(NUMBER,IS_FINITE,MATH_FLOOR){return(function(num){num=NUMBER(num);if(IS_FINITE(num)){num=MATH_FLOOR(num)}else{num=-1}return num})})(Num,sh.isFinite,sh.Math.floor),NumberIterator=(function(EACH,GET_NUMBER,VALUE_OF){return(function(startValue,endValue){initialValue=VALUE_OF.call(startValue).valueOf();startValue=GET_NUMBER(startValue);endValue=GET_NUMBER(endValue);this.valueOf=(function(){return initialValue});this.toString=(function(){return(""+initialValue)});this.each=(function(fct,target){EACH(startValue,endValue,fct,target);return initialValue})})})(each,getNumber,sh.Object.prototype.valueOf);NumProto.to=StrProto.to=(function(NUMBER_ITERATOR){return(function(num){return(new NUMBER_ITERATOR(this,num))})})(NumberIterator);NumberIterator=getNumber=each=StrProto=NumProto=Num=sh=null;delete NumberIterator;delete getNumber,delete each;delete StrProto;delete NumProto;delete Num;delete sh;delete arguments.callee}).call(null);
 
-- packed / shrinked           - 720 byte :
-//(function(){var f=((this&&(this.window===this)&&window)||this),each=(function(a,b,c,d){var e=-1,count,len;if(a<=b){count=(a-1);len=(b-count);while(++e<len){c.call(d,e,len,c,++count,a,b)}}else{count=(a+1);len=f.Math.abs(b-count);while(++e<len){c.call(d,e,len,c,--count,a,b)}}}),getNumber=(function(a){a=f.Number(a);if(f.isFinite(a)){a=f.Math.floor(a)}else{a=-1}return a}),NumberIterator=(function(c,d){initialValue=c.valueOf();c=getNumber(c);d=getNumber(d);this.valueOf=(function(){return initialValue});this.toString=(function(){return String(initialValue)});this.each=(function(a,b){each(c,d,a,b);return initialValue})});f.Number.prototype.to=f.String.prototype.to=(function(a){return(new NumberIterator(this,a))})})();
+- packed / shrinked           - 1.137 byte :
+(function(){var h=this,Num=h.Number,NumProto=Num.prototype,StrProto=h.String.prototype,each=(function(f){return(function(a,b,c,d){if(typeof c=="function"){d=(d||(((typeof d=="undefined")||(typeof d=="object"))?null:d));var e=-1,count,len;if(a<=b){count=(a-1);len=(b-count);while(++e<len){c.call(d,e,len,c,++count,a,b)}}else{count=(a+1);len=f(b-count);while(++e<len){c.call(d,e,len,c,--count,a,b)}}}})})(h.Math.abs),getNumber=(function(b,c,d){return(function(a){a=b(a);if(c(a)){a=d(a)}else{a=-1}return a})})(Num,h.isFinite,h.Math.floor),NumberIterator=(function(e,f,g){return(function(c,d){initialValue=g.call(c).valueOf();c=f(c);d=f(d);this.valueOf=(function(){return initialValue});this.toString=(function(){return(""+initialValue)});this.each=(function(a,b){e(c,d,a,b);return initialValue})})})(each,getNumber,h.Object.prototype.valueOf);NumProto.to=StrProto.to=(function(b){return(function(a){return(new b(this,a))})})(NumberIterator);NumberIterator=getNumber=each=StrProto=NumProto=Num=h=null;delete NumberIterator;delete getNumber,delete each;delete StrProto;delete NumProto;delete Num;delete h;delete arguments.callee}).call(null);
 
 
 */ /*

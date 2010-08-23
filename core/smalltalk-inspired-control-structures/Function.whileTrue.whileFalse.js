@@ -1,4 +1,4 @@
-﻿/*
+/*
   [Function.whileTrue|whileFalse] is the last JavaScript implementation of Smalltalk inspired
   control structures like [Boolean.ifTrue|ifFalse], [Number.times] or [Number.to( ... ).each]
   that recently have been committed to refactory.org.
@@ -26,74 +26,72 @@
   (function () {}).whileFalse().ifTrue(function () {});
 */
 
-(function () { // anonymus application context
+
+(function () {
+  var sh/*scripting_host|global_object*/ = this, Arr = sh.Array, FctProto = sh.Function.prototype,
 
 
-//[sh] - scripting host.
-  var sh = ((this && (this.window === this) && /*this.*/window) || this),
-
-
-  makeArray = (((typeof sh.Array.make == "function") && sh.Array.make) || (function () {
-
-    var slice = sh.Array.prototype.slice;
-    return (function (list) {
+  makeArray = (((typeof Arr.make == "function") && Arr.make) || (function (slice) {
+    return (function (list) { // sufficient enough for it only has to convert [Argument] objects into [Array] objects.
 
       return slice.call(list);
     });
-  })()),
-  isFunction = (function (obj) {
-
-    return (typeof obj == "function");
-  });
+  })(Arr.prototype.slice));
 
 
-  sh.Function.prototype.whileTrue = (function (/*fct:Function[, arg01:Object[, arg02:Object]]*/) {
+  FctProto.whileTrue = (function (make) {
+    return (function (/*fct:Function[, arg01:Object[, arg02:Object]]*/) {
 
-    var args = makeArray(arguments),
+      var arr = make(arguments), fctStatement = arr.shift(0), fctCondition = this;
+      if ((typeof fctStatement == "function") && (typeof fctCondition == "function")) {
 
-    fctStatement = args.shift(0),
-    fctCondition = this;
-
-    if (isFunction(fctStatement) && isFunction(fctCondition)) {
-
-      while (fctCondition.apply(null, args)) {
-      //args = fctStatement.apply(null, args);          // this already is sufficient and every browser can deal with it ...
-        args = (fctStatement.apply(null, args) || []);  // ... except for msie that at this point, for whatever reason, desires an object.
+        while (fctCondition.apply(null, arr)) {
+        //arr = fctStatement.apply(null, arr);          // this already is sufficient and every browser can deal with it ...
+          arr = (fctStatement.apply(null, arr) || []);  // ... except for msie that at this point, for whatever reason, desires an object.
+        }
       }
-    }
-  //return false; // nice to have if to be followed by a functional [Boolean.ifFalse] expression.
-    return null; // that's what the Smalltalk specification states.
-  });
-  sh.Function.prototype.whileFalse = (function (/*fct:Function[, arg01:Object[, arg02:Object]]*/) {
+    //return false; // nice to have if to be followed by a functional [Boolean.ifFalse] expression.
+      return null;  // that's what the Smalltalk specification states.
+    });
+  })(makeArray);
 
-    var args = makeArray(arguments),
 
-    fctStatement = args.shift(0),
-    fctCondition = this;
+  FctProto.whileFalse = (function (make) {
+    return (function (/*fct:Function[, arg01:Object[, arg02:Object]]*/) {
 
-    if (isFunction(fctStatement) && isFunction(fctCondition)) {
+      var arr = make(arguments), fctStatement = arr.shift(0), fctCondition = this;
+      if ((typeof fctStatement == "function") && (typeof fctCondition == "function")) {
 
-      while (!fctCondition.apply(null, args)) {
-      //args = fctStatement.apply(null, args);          // this already is sufficient and every browser can deal with it ...
-        args = (fctStatement.apply(null, args) || []);  // ... except for msie that at this point, for whatever reason, desires an object.
+        while (!fctCondition.apply(null, arr)) {
+        //arr = fctStatement.apply(null, arr);          // this already is sufficient and every browser can deal with it ...
+          arr = (fctStatement.apply(null, arr) || []);  // ... except for msie that at this point, for whatever reason, desires an object.
+        }
       }
-    }
-  //return false; // nice to have if to be followed by a functional [Boolean.ifFalse] expression.
-    return null; // that's what the Smalltalk specification states.
-  });
+    //return false; // nice to have if to be followed by a functional [Boolean.ifFalse] expression.
+      return null;  // that's what the Smalltalk specification states.
+    });
+  })(makeArray);
 
-})();/*
+
+  makeArray = FctProto = Arr = sh = null;
+  delete makeArray; delete FctProto; delete Arr; delete sh;
+
+
+  delete arguments.callee;
+}).call(null/*does force the internal [this] context pointing to the [global] object*/);
+
+
+
+/*
 
 
   [http://closure-compiler.appspot.com/home]
 
-- Whitespace only - 795 byte :
-//(function(){var sh=this&&this.window===this&&window||this,makeArray=typeof sh.Array.make=="function"&&sh.Array.make||function(){var slice=sh.Array.prototype.slice;return function(list){return slice.call(list)}}(),isFunction=function(obj){return typeof obj=="function"};sh.Function.prototype.whileTrue=function(){var args=makeArray(arguments),fctStatement=args.shift(0),fctCondition=this;if(isFunction(fctStatement)&&isFunction(fctCondition))while(fctCondition.apply(null,args))args=fctStatement.apply(null,args)||[];return null};sh.Function.prototype.whileFalse=function(){var args=makeArray(arguments),fctStatement=args.shift(0),fctCondition=this;if(isFunction(fctStatement)&&isFunction(fctCondition))while(!fctCondition.apply(null,args))args=fctStatement.apply(null,args)||[];return null}})();
+- Whitespace only - 896 byte :
+(function(){var sh=this,Arr=sh.Array,FctProto=sh.Function.prototype,makeArray=typeof Arr.make=="function"&&Arr.make||function(slice){return function(list){return slice.call(list)}}(Arr.prototype.slice);FctProto.whileTrue=function(make){return function(){var arr=make(arguments),fctStatement=arr.shift(0),fctCondition=this;if(typeof fctStatement=="function"&&typeof fctCondition=="function")while(fctCondition.apply(null,arr))arr=fctStatement.apply(null,arr)||[];return null}}(makeArray);FctProto.whileFalse=function(make){return function(){var arr=make(arguments),fctStatement=arr.shift(0),fctCondition=this;if(typeof fctStatement=="function"&&typeof fctCondition=="function")while(!fctCondition.apply(null,arr))arr=fctStatement.apply(null,arr)||[];return null}}(makeArray);makeArray=FctProto=Arr=sh=null;delete makeArray;delete FctProto;delete Arr;delete sh;delete arguments.callee}).call(null);
 
-- Simple          - 540 byte :
-//(function(){var c=this&&this.window===this&&window||this,f=typeof c.Array.make=="function"&&c.Array.make||function(){var a=c.Array.prototype.slice;return function(b){return a.call(b)}}(),e=function(a){return typeof a=="function"};c.Function.prototype.whileTrue=function(){var a=f(arguments),b=a.shift(0),d=this;if(e(b)&&e(d))for(;d.apply(null,a);)a=b.apply(null,a)||[];return null};c.Function.prototype.whileFalse=function(){var a=f(arguments),b=a.shift(0),d=this;if(e(b)&&e(d))for(;!d.apply(null,a);)a=b.apply(null,a)||[];return null}})();
-
-- Advanced        - 171 byte : !!! BROKEN !!!
+- Simple          - 624 byte :
+(function(){var e=this,b=e.Array,f=e.Function.prototype,g=typeof b.make=="function"&&b.make||function(c){return function(a){return c.call(a)}}(b.prototype.slice);f.whileTrue=function(c){return function(){var a=c(arguments),d=a.shift(0);if(typeof d=="function"&&typeof this=="function")for(;this.apply(null,a);)a=d.apply(null,a)||[];return null}}(g);f.whileFalse=function(c){return function(){var a=c(arguments),d=a.shift(0);if(typeof d=="function"&&typeof this=="function")for(;!this.apply(null,a);)a=d.apply(null,a)||[];return null}}(g);g=f=b=e=null;delete g;delete f;delete b;delete e;delete arguments.callee}).call(null);
 
 
 */ /*
@@ -101,11 +99,14 @@
 
   [http://dean.edwards.name/packer/]
 
-- packed                      - 827 byte :
-//(function(){var sh=((this&&(this.window===this)&&window)||this),makeArray=(((typeof sh.Array.make=="function")&&sh.Array.make)||(function(){var slice=sh.Array.prototype.slice;return(function(list){return slice.call(list)})})()),isFunction=(function(obj){return(typeof obj=="function")});sh.Function.prototype.whileTrue=(function(){var args=makeArray(arguments),fctStatement=args.shift(0),fctCondition=this;if(isFunction(fctStatement)&&isFunction(fctCondition)){while(fctCondition.apply(null,args)){args=(fctStatement.apply(null,args)||[])}}return null});sh.Function.prototype.whileFalse=(function(){var args=makeArray(arguments),fctStatement=args.shift(0),fctCondition=this;if(isFunction(fctStatement)&&isFunction(fctCondition)){while(!fctCondition.apply(null,args)){args=(fctStatement.apply(null,args)||[])}}return null})})();ister)&&isFunction(sh.EventTargetProvider.unsubscribe)&&sh.EventTargetProvider)||(sh.EventDispatcher&&isFunction(sh.EventDispatcher.register)&&isFunction(sh.EventDispatcher.unsubscribe)&&sh.EventDispatcher))||null);throwImplementationError(!ETP&&strErrorETP);throwImplementationError(!LWM&&strErrorLWM);strErrorETP=null;strErrorLWM=null;isFunction=null;throwImplementationError=null;delete strErrorETP;delete strErrorLWM;delete isFunction;delete throwImplementationError;return(function(){var self=this,list=[],onEnqueue=(function(obj){self.dispatchEvent({target:self,type:"onEnqueue",elm:obj})}),onDequeue=(function(obj){self.dispatchEvent({target:self,type:"onDequeue",elm:obj})}),onEmpty=(function(){self.dispatchEvent({target:self,type:"onEmpty"})});ETP.register(this);LWM.call(this,list);this.constructor=(sh.Queue||arguments.callee);this.enqueue=(function(obj){list.push(obj);this.length=list.length;onEnqueue(obj)});this.dequeue=(function(){var obj=list.shift();if(list.length===0){onEmpty()}onDequeue(obj);return obj})})})();
+- packed                      - 929 byte :
+(function(){var sh=this,Arr=sh.Array,FctProto=sh.Function.prototype,makeArray=(((typeof Arr.make=="function")&&Arr.make)||(function(slice){return(function(list){return slice.call(list)})})(Arr.prototype.slice));FctProto.whileTrue=(function(make){return(function(){var arr=make(arguments),fctStatement=arr.shift(0),fctCondition=this;if((typeof fctStatement=="function")&&(typeof fctCondition=="function")){while(fctCondition.apply(null,arr)){arr=(fctStatement.apply(null,arr)||[])}}return null})})(makeArray);FctProto.whileFalse=(function(make){return(function(){var arr=make(arguments),fctStatement=arr.shift(0),fctCondition=this;if((typeof fctStatement=="function")&&(typeof fctCondition=="function")){while(!fctCondition.apply(null,arr)){arr=(fctStatement.apply(null,arr)||[])}}return null})})(makeArray);makeArray=FctProto=Arr=sh=null;delete makeArray;delete FctProto;delete Arr;delete sh;delete arguments.callee}).call(null);
 
-- packed / shrinked           - 773 byte :
-//(function(){var c=((this&&(this.window===this)&&window)||this),makeArray=(((typeof c.Array.make=="function")&&c.Array.make)||(function(){var b=c.Array.prototype.slice;return(function(a){return b.call(a)})})()),isFunction=(function(a){return(typeof a=="function")});c.Function.prototype.whileTrue=(function(){var a=makeArray(arguments),fctStatement=a.shift(0),fctCondition=this;if(isFunction(fctStatement)&&isFunction(fctCondition)){while(fctCondition.apply(null,a)){a=(fctStatement.apply(null,a)||[])}}return null});c.Function.prototype.whileFalse=(function(){var a=makeArray(arguments),fctStatement=a.shift(0),fctCondition=this;if(isFunction(fctStatement)&&isFunction(fctCondition)){while(!fctCondition.apply(null,a)){a=(fctStatement.apply(null,a)||[])}}return null})})();
+- packed / shrinked           - 878 byte :
+(function(){var c=this,Arr=c.Array,FctProto=c.Function.prototype,makeArray=(((typeof Arr.make=="function")&&Arr.make)||(function(b){return(function(a){return b.call(a)})})(Arr.prototype.slice));FctProto.whileTrue=(function(b){return(function(){var a=b(arguments),fctStatement=a.shift(0),fctCondition=this;if((typeof fctStatement=="function")&&(typeof fctCondition=="function")){while(fctCondition.apply(null,a)){a=(fctStatement.apply(null,a)||[])}}return null})})(makeArray);FctProto.whileFalse=(function(b){return(function(){var a=b(arguments),fctStatement=a.shift(0),fctCondition=this;if((typeof fctStatement=="function")&&(typeof fctCondition=="function")){while(!fctCondition.apply(null,a)){a=(fctStatement.apply(null,a)||[])}}return null})})(makeArray);makeArray=FctProto=Arr=c=null;delete makeArray;delete FctProto;delete Arr;delete c;delete arguments.callee}).call(null);
+
+- packed / shrinked / encoded - 819 byte :
+eval(function(p,a,c,k,e,r){e=function(c){return c.toString(a)};if(!''.replace(/^/,String)){while(c--)r[e(c)]=k[c]||e(c);k=[function(e){return r[e]}];e=function(){return'\\w+'};c=1};while(c--)if(k[c])p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c]);return p}('(1(){f c=g,6=c.o,7=c.t.j,9=(((d 6.k=="1")&&6.k)||(1(b){4(1(a){4 b.i(a)})})(6.j.q));7.s=(1(b){4(1(){f a=b(h),3=a.n(0),5=g;m((d 3=="1")&&(d 5=="1")){l(5.e(2,a)){a=(3.e(2,a)||[])}}4 2})})(9);7.r=(1(b){4(1(){f a=b(h),3=a.n(0),5=g;m((d 3=="1")&&(d 5=="1")){l(!5.e(2,a)){a=(3.e(2,a)||[])}}4 2})})(9);9=7=6=c=2;8 9;8 7;8 6;8 c;8 h.p}).i(2);',30,30,'|function|null|fctStatement|return|fctCondition|Arr|FctProto|delete|makeArray||||typeof|apply|var|this|arguments|call|prototype|make|while|if|shift|Array|callee|slice|whileFalse|whileTrue|Function'.split('|'),0,{}));
 
 
 */ /*
