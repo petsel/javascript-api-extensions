@@ -1,99 +1,89 @@
-﻿
-
-var Queue = (function (ETP, LWM) { // [http://de.wikipedia.org/wiki/Datenstruktur#Warteschlange]
 
 
-  var sh = ((this && (this.window === this) && /*this.*/window) || this),
-
-  strErrorETP = "This [[Queue]] implementation badly requires the presence of the [[EventTargetProvider]] singleton - aka [[EventDispatcher]] .",
-  strErrorLWM = "This [[Queue]] implementation badly requires the presence of the [[ListWrapperMixin]]  Mixin (/ Interface).",
-
-  isFunction = (function (obj) {
-    return (typeof obj == "function");
-  }),
-  throwImplementationError = (function (str) {
-    if (str) {
-      throw (new ReferenceError(str));
-    }
-  });
-
-  LWM = (function (fct) { // LWM : [[ListWrapperMixin]]  Mixin (/ Interface)
-    var obj = new fct;
-    return ((obj && isFunction(obj.item) && isFunction(obj.size) && fct) || null);
-  })(
-    ((isFunction(LWM) && LWM) || (isFunction(sh.ListWrapperMixin) && sh.ListWrapperMixin)) || (function () {})
-  );
-  ETP = (( // ETP : [[EventTargetProvider]] Singleton
-    (ETP && isFunction(ETP.register) && isFunction(ETP.unsubscribe) && ETP) ||
-    (sh.EventTargetProvider && isFunction(sh.EventTargetProvider.register) && isFunction(sh.EventTargetProvider.unsubscribe) && sh.EventTargetProvider) ||
-    (sh.EventDispatcher && isFunction(sh.EventDispatcher.register) && isFunction(sh.EventDispatcher.unsubscribe) && sh.EventDispatcher)
-  ) || null);
-
-  throwImplementationError(!ETP && strErrorETP);
-  throwImplementationError(!LWM && strErrorLWM);
-
-//print("sh : " + sh);
-
-  strErrorETP = null; strErrorLWM = null; isFunction = null; throwImplementationError = null;
-  delete strErrorETP; delete strErrorLWM; delete isFunction; delete throwImplementationError;
+(function (ns, ListWrapperMixin, EventTargetProvider) {
 
 
-  return (function () { // [[Queue]] constructor function
+  var unknown, isFunction = (function (obj) {return (typeof obj == "function");});
+
+  ListWrapperMixin = ((isFunction(ListWrapperMixin) && ListWrapperMixin) || (ns && isFunction(ns.ListWrapperMixin) && ns.ListWrapperMixin) || (isFunction(this.ListWrapperMixin) && this.ListWrapperMixin) || unknown);
+  EventTargetProvider = (
+    (EventTargetProvider && isFunction(EventTargetProvider.register) && isFunction(EventTargetProvider.unsubscribe) && EventTargetProvider) ||
+    (ns && ns.EventTargetProvider && isFunction(ns.EventTargetProvider.register) && isFunction(ns.EventTargetProvider.unsubscribe) && ns.EventTargetProvider) ||
+    (this.EventTargetProvider && isFunction(this.EventTargetProvider.register) && isFunction(this.EventTargetProvider.unsubscribe) && this.EventTargetProvider) || unknown);
+
+  if (!ListWrapperMixin) {throw (new ReferenceError("This [[Queue]] implementation requires the presence of the [[ListWrapperMixin]]  Mixin (/ Interface)."));}
+  if (!EventTargetProvider) {throw (new ReferenceError("This [[Queue]] implementation requires the presence of the [[EventTargetProvider]] singleton - aka [[EventDispatcher]]."));}
 
 
-    var self = this, list = [],
+  ns = (ns/*[custom_namespace]*/ || this/*[scripting_host|global_object]*/);
 
-    onEnqueue = (function (obj) {
 
-      self.dispatchEvent({target: self, type: "enqueue", elm: obj/*, even more key:value pairs */});
-    }),
-    onDequeue = (function (obj) {
+  ns["Queue"] = (function (NAMESPACE, LIST_WRAPPER_MIXIN, EVENT_TARGET_PROVIDER) { // [Queue] Constructor becomes an implementation either - if provided - of a custom namespace otherwise of the global namespace.
+    return (function () { // [http://de.wikipedia.org/wiki/Datenstruktur#Warteschlange]
 
-      self.dispatchEvent({target: self, type: "dequeue", elm: obj/*, even more key:value pairs */});
-    }),
-    onEmpty = (function () {
 
-      self.dispatchEvent({target: self, type: "empty"/*, even more key:value pairs */});
+      var self = this, list = [],
+
+      onEnqueue = (function (obj) {
+        self.dispatchEvent({target: self, type: "enqueue", elm: obj/*, even more key:value pairs */});
+      }),
+      onDequeue = (function (obj) {
+        self.dispatchEvent({target: self, type: "dequeue", elm: obj/*, even more key:value pairs */});
+      }),
+      onEmpty = (function () {
+        self.dispatchEvent({target: self, type: "empty"/*, even more key:value pairs */});
+      });
+
+
+      EVENT_TARGET_PROVIDER.register(this); // apply the [EventTargetMixin].
+      LIST_WRAPPER_MIXIN.call(this, list); // apply kind of wrapped basic [List] interface.
+
+
+    //this.constructor = (NAMESPACE.Queue || arguments.callee);
+      this.constructor = NAMESPACE.Queue;
+
+
+    //queue specific part
+      this.enqueue = (function (obj/*:[Object]*/) { /* enqueue | line up | [Array.push] */
+
+        list.push(obj);
+        this.length = list.length;
+        onEnqueue(obj);
+      });
+      this.dequeue = (function () { /* dequeue | line up | [Array.shift] */
+
+        var obj = list.shift();
+        if (list.length === 0) {
+
+          onEmpty();
+        }
+        onDequeue(obj);
+
+        return obj;
+      });
     });
+  })(ns, ListWrapperMixin, EventTargetProvider); // [Queue] Constructor becomes an implementation either - if provided - of a custom namespace otherwise of the global namespace.
 
 
-    ETP.register(this); // provide the EventTarget Mixin (/ Interface).
-    LWM.call(this, list); // apply the wrapped basic [[List]] interface.
-
-    this.constructor = (sh.Queue || arguments.callee);
+  EventTargetProvider = ListWrapperMixin = isFunction = unknown = ns = null;
+  delete EventTargetProvider; delete ListWrapperMixin; delete isFunction; delete unknown; delete ns;
 
 
-  //queue specific part
-    this.enqueue = (function (obj/*:[Object]*/) { /* enqueue | line up | [Array.push] */
+  delete arguments.callee;
+}).call(null/*does force the internal [this] context pointing to the [global] object*/ /*[, optional_namespace_Queue_is_supposed_to_be_bound_to[, kind_of_wrapped_list_interface[, EventTargetProvider]]]*/);
 
-      list.push(obj);
-      this.length = list.length;
-      onEnqueue(obj);
-    });
-    this.dequeue = (function () { /* dequeue | line up | [Array.shift] */
 
-      var obj = list.shift();
-      if (list.length === 0) {
-
-        onEmpty();
-      }
-      onDequeue(obj);
-
-      return obj;
-    });
-  });
-})();/*
+/*
 
 
   [http://closure-compiler.appspot.com/home]
 
-- Whitespace only - 1.801 byte :
-//var Queue=function(ETP,LWM){var sh=this&&this.window===this&&window||this,strErrorETP="This [[Queue]] implementation badly requires the presence of the [[EventTargetProvider]] singleton - aka [[EventDispatcher]] .",strErrorLWM="This [[Queue]] implementation badly requires the presence of the [[ListWrapperMixin]]  Mixin (/ Interface).",isFunction=function(obj){return typeof obj=="function"},throwImplementationError=function(str){if(str)throw new ReferenceError(str);};LWM=function(fct){var obj=new fct;return obj&&isFunction(obj.item)&&isFunction(obj.size)&&fct||null}(isFunction(LWM)&&LWM||isFunction(sh.ListWrapperMixin)&&sh.ListWrapperMixin||function(){});ETP=ETP&&isFunction(ETP.register)&&isFunction(ETP.unsubscribe)&&ETP||sh.EventTargetProvider&&isFunction(sh.EventTargetProvider.register)&&isFunction(sh.EventTargetProvider.unsubscribe)&&sh.EventTargetProvider||sh.EventDispatcher&&isFunction(sh.EventDispatcher.register)&&isFunction(sh.EventDispatcher.unsubscribe)&&sh.EventDispatcher||null;throwImplementationError(!ETP&&strErrorETP);throwImplementationError(!LWM&&strErrorLWM);strErrorETP=null;strErrorLWM=null;isFunction=null;throwImplementationError=null;delete strErrorETP;delete strErrorLWM;delete isFunction;delete throwImplementationError;return function(){var self=this,list=[],onEnqueue=function(obj){self.dispatchEvent({target:self,type:"enqueue",elm:obj})},onDequeue=function(obj){self.dispatchEvent({target:self,type:"dequeue",elm:obj})},onEmpty=function(){self.dispatchEvent({target:self,type:"empty"})};ETP.register(this);LWM.call(this,list);this.constructor=sh.Queue||arguments.callee;this.enqueue=function(obj){list.push(obj);this.length=list.length;onEnqueue(obj)};this.dequeue=function(){var obj=list.shift();if(list.length===0)onEmpty();onDequeue(obj);return obj}}}();
 
-- Simple          - 1.305 byte :
-//var Queue=function(f,g){var c=this&&this.window===this&&window||this,i="This [[Queue]] implementation badly requires the presence of the [[EventTargetProvider]] singleton - aka [[EventDispatcher]] .",j="This [[Queue]] implementation badly requires the presence of the [[ListWrapperMixin]]  Mixin (/ Interface).",b=function(a){return typeof a=="function"},h=function(a){if(a)throw new ReferenceError(a);};g=function(a){var d=new a;return d&&b(d.item)&&b(d.size)&&a||null}(b(g)&&g||b(c.ListWrapperMixin)&&c.ListWrapperMixin||function(){});f=f&&b(f.register)&&b(f.unsubscribe)&&f||c.EventTargetProvider&&b(c.EventTargetProvider.register)&&b(c.EventTargetProvider.unsubscribe)&&c.EventTargetProvider||c.EventDispatcher&&b(c.EventDispatcher.register)&&b(c.EventDispatcher.unsubscribe)&&c.EventDispatcher||null;h(!f&&i);h(!g&&j);h=b=j=i=null;delete i;delete j;delete b;delete h;return function(){var a=this,d=[],k=function(e){a.dispatchEvent({target:a,type:"enqueue",elm:e})},l=function(e){a.dispatchEvent({target:a,type:"dequeue",elm:e})},m=function(){a.dispatchEvent({target:a,type:"empty"})};f.register(this);g.call(this,d);this.constructor=c.Queue||arguments.callee;this.enqueue=function(e){d.push(e);this.length=d.length;k(e)};this.dequeue=function(){var e=d.shift();d.length===0&&m();l(e);return e}}}();
+- Whitespace only - 1.964 byte :
+(function(ns,ListWrapperMixin,EventTargetProvider){var unknown,isFunction=function(obj){return typeof obj=="function"};ListWrapperMixin=isFunction(ListWrapperMixin)&&ListWrapperMixin||ns&&isFunction(ns.ListWrapperMixin)&&ns.ListWrapperMixin||isFunction(this.ListWrapperMixin)&&this.ListWrapperMixin||unknown;EventTargetProvider=EventTargetProvider&&isFunction(EventTargetProvider.register)&&isFunction(EventTargetProvider.unsubscribe)&&EventTargetProvider||ns&&ns.EventTargetProvider&&isFunction(ns.EventTargetProvider.register)&&isFunction(ns.EventTargetProvider.unsubscribe)&&ns.EventTargetProvider||this.EventTargetProvider&&isFunction(this.EventTargetProvider.register)&&isFunction(this.EventTargetProvider.unsubscribe)&&this.EventTargetProvider||unknown;if(!ListWrapperMixin)throw new ReferenceError("This [[Queue]] implementation requires the presence of the [[ListWrapperMixin]]  Mixin (/ Interface).");if(!EventTargetProvider)throw new ReferenceError("This [[Queue]] implementation requires the presence of the [[EventTargetProvider]] singleton - aka [[EventDispatcher]].");ns=ns||this;ns["Queue"]=function(NAMESPACE,LIST_WRAPPER_MIXIN,EVENT_TARGET_PROVIDER){return function(){var self=this,list=[],onEnqueue=function(obj){self.dispatchEvent({target:self,type:"enqueue",elm:obj})},onDequeue=function(obj){self.dispatchEvent({target:self,type:"dequeue",elm:obj})},onEmpty=function(){self.dispatchEvent({target:self,type:"empty"})};EVENT_TARGET_PROVIDER.register(this);LIST_WRAPPER_MIXIN.call(this,list);this.constructor=NAMESPACE.Queue;this.enqueue=function(obj){list.push(obj);this.length=list.length;onEnqueue(obj)};this.dequeue=function(){var obj=list.shift();if(list.length===0)onEmpty();onDequeue(obj);return obj}}}(ns,ListWrapperMixin,EventTargetProvider);EventTargetProvider=ListWrapperMixin=isFunction=unknown=ns=null;delete EventTargetProvider;delete ListWrapperMixin;delete isFunction;delete unknown;delete ns;delete arguments.callee}).call(null);
 
-- Advanced        - 1.024 byte : !!! BROKEN !!!
+- Simple          - 1.251 byte :
+(function(a,d,c){var h,b=function(i){return typeof i=="function"};d=b(d)&&d||a&&b(a.ListWrapperMixin)&&a.ListWrapperMixin||b(this.ListWrapperMixin)&&this.ListWrapperMixin||h;c=c&&b(c.register)&&b(c.unsubscribe)&&c||a&&a.EventTargetProvider&&b(a.EventTargetProvider.register)&&b(a.EventTargetProvider.unsubscribe)&&a.EventTargetProvider||this.EventTargetProvider&&b(this.EventTargetProvider.register)&&b(this.EventTargetProvider.unsubscribe)&&this.EventTargetProvider||h;if(!d)throw new ReferenceError("This [[Queue]] implementation requires the presence of the [[ListWrapperMixin]]  Mixin (/ Interface).");if(!c)throw new ReferenceError("This [[Queue]] implementation requires the presence of the [[EventTargetProvider]] singleton - aka [[EventDispatcher]].");a=a||this;a.Queue=function(i,j,k){return function(){var e=this,f=[];k.register(this);j.call(this,f);this.constructor=i.Queue;this.enqueue=function(g){f.push(g);this.length=f.length;e.dispatchEvent({target:e,type:"enqueue",elm:g})};this.dequeue=function(){var g=f.shift();f.length===0&&e.dispatchEvent({target:e,type:"empty"});e.dispatchEvent({target:e,type:"dequeue",elm:g});return g}}}(a,d,c);c=d=b=h=a=null;delete c;delete d;delete b;delete h;delete a;delete arguments.callee}).call(null);
 
 
 */ /*
@@ -101,14 +91,25 @@ var Queue = (function (ETP, LWM) { // [http://de.wikipedia.org/wiki/Datenstruktu
 
   [http://dean.edwards.name/packer/]
 
-- packed                      - 1.854 byte :
-//var Queue=(function(ETP,LWM){var sh=((this&&(this.window===this)&&window)||this),strErrorETP="This [[Queue]] implementation badly requires the presence of the [[EventTargetProvider]] singleton - aka [[EventDispatcher]] .",strErrorLWM="This [[Queue]] implementation badly requires the presence of the [[ListWrapperMixin]]  Mixin (/ Interface).",isFunction=(function(obj){return(typeof obj=="function")}),throwImplementationError=(function(str){if(str){throw(new ReferenceError(str));}});LWM=(function(fct){var obj=new fct;return((obj&&isFunction(obj.item)&&isFunction(obj.size)&&fct)||null)})(((isFunction(LWM)&&LWM)||(isFunction(sh.ListWrapperMixin)&&sh.ListWrapperMixin))||(function(){}));ETP=(((ETP&&isFunction(ETP.register)&&isFunction(ETP.unsubscribe)&&ETP)||(sh.EventTargetProvider&&isFunction(sh.EventTargetProvider.register)&&isFunction(sh.EventTargetProvider.unsubscribe)&&sh.EventTargetProvider)||(sh.EventDispatcher&&isFunction(sh.EventDispatcher.register)&&isFunction(sh.EventDispatcher.unsubscribe)&&sh.EventDispatcher))||null);throwImplementationError(!ETP&&strErrorETP);throwImplementationError(!LWM&&strErrorLWM);strErrorETP=null;strErrorLWM=null;isFunction=null;throwImplementationError=null;delete strErrorETP;delete strErrorLWM;delete isFunction;delete throwImplementationError;return(function(){var self=this,list=[],onEnqueue=(function(obj){self.dispatchEvent({target:self,type:"enqueue",elm:obj})}),onDequeue=(function(obj){self.dispatchEvent({target:self,type:"dequeue",elm:obj})}),onEmpty=(function(){self.dispatchEvent({target:self,type:"empty"})});ETP.register(this);LWM.call(this,list);this.constructor=(sh.Queue||arguments.callee);this.enqueue=(function(obj){list.push(obj);this.length=list.length;onEnqueue(obj)});this.dequeue=(function(){var obj=list.shift();if(list.length===0){onEmpty()}onDequeue(obj);return obj})})})();
 
-- packed / shrinked           - 1.749 byte :
-//var Queue=(function(c,d){var e=((this&&(this.window===this)&&window)||this),strErrorETP="This [[Queue]] implementation badly requires the presence of the [[EventTargetProvider]] singleton - aka [[EventDispatcher]] .",strErrorLWM="This [[Queue]] implementation badly requires the presence of the [[ListWrapperMixin]]  Mixin (/ Interface).",isFunction=(function(a){return(typeof a=="function")}),throwImplementationError=(function(a){if(a){throw(new ReferenceError(a));}});d=(function(a){var b=new a;return((b&&isFunction(b.item)&&isFunction(b.size)&&a)||null)})(((isFunction(d)&&d)||(isFunction(e.ListWrapperMixin)&&e.ListWrapperMixin))||(function(){}));c=(((c&&isFunction(c.register)&&isFunction(c.unsubscribe)&&c)||(e.EventTargetProvider&&isFunction(e.EventTargetProvider.register)&&isFunction(e.EventTargetProvider.unsubscribe)&&e.EventTargetProvider)||(e.EventDispatcher&&isFunction(e.EventDispatcher.register)&&isFunction(e.EventDispatcher.unsubscribe)&&e.EventDispatcher))||null);throwImplementationError(!c&&strErrorETP);throwImplementationError(!d&&strErrorLWM);strErrorETP=null;strErrorLWM=null;isFunction=null;throwImplementationError=null;delete strErrorETP;delete strErrorLWM;delete isFunction;delete throwImplementationError;return(function(){var b=this,list=[],onEnqueue=(function(a){b.dispatchEvent({target:b,type:"enqueue",elm:a})}),onDequeue=(function(a){b.dispatchEvent({target:b,type:"dequeue",elm:a})}),onEmpty=(function(){b.dispatchEvent({target:b,type:"empty"})});c.register(this);d.call(this,list);this.constructor=(e.Queue||arguments.callee);this.enqueue=(function(a){list.push(a);this.length=list.length;onEnqueue(a)});this.dequeue=(function(){var a=list.shift();if(list.length===0){onEmpty()}onDequeue(a);return a})})})();
+- packed                      - 2.005 byte :
+(function(ns,ListWrapperMixin,EventTargetProvider){var unknown,isFunction=(function(obj){return(typeof obj=="function")});ListWrapperMixin=((isFunction(ListWrapperMixin)&&ListWrapperMixin)||(ns&&isFunction(ns.ListWrapperMixin)&&ns.ListWrapperMixin)||(isFunction(this.ListWrapperMixin)&&this.ListWrapperMixin)||unknown);EventTargetProvider=((EventTargetProvider&&isFunction(EventTargetProvider.register)&&isFunction(EventTargetProvider.unsubscribe)&&EventTargetProvider)||(ns&&ns.EventTargetProvider&&isFunction(ns.EventTargetProvider.register)&&isFunction(ns.EventTargetProvider.unsubscribe)&&ns.EventTargetProvider)||(this.EventTargetProvider&&isFunction(this.EventTargetProvider.register)&&isFunction(this.EventTargetProvider.unsubscribe)&&this.EventTargetProvider)||unknown);if(!ListWrapperMixin){throw(new ReferenceError("This [[Queue]] implementation requires the presence of the [[ListWrapperMixin]]  Mixin (/ Interface)."));}if(!EventTargetProvider){throw(new ReferenceError("This [[Queue]] implementation requires the presence of the [[EventTargetProvider]] singleton - aka [[EventDispatcher]]."));}ns=(ns||this);ns["Queue"]=(function(NAMESPACE,LIST_WRAPPER_MIXIN,EVENT_TARGET_PROVIDER){return(function(){var self=this,list=[],onEnqueue=(function(obj){self.dispatchEvent({target:self,type:"enqueue",elm:obj})}),onDequeue=(function(obj){self.dispatchEvent({target:self,type:"dequeue",elm:obj})}),onEmpty=(function(){self.dispatchEvent({target:self,type:"empty"})});EVENT_TARGET_PROVIDER.register(this);LIST_WRAPPER_MIXIN.call(this,list);this.constructor=NAMESPACE.Queue;this.enqueue=(function(obj){list.push(obj);this.length=list.length;onEnqueue(obj)});this.dequeue=(function(){var obj=list.shift();if(list.length===0){onEmpty()}onDequeue(obj);return obj})})})(ns,ListWrapperMixin,EventTargetProvider);EventTargetProvider=ListWrapperMixin=isFunction=unknown=ns=null;delete EventTargetProvider;delete ListWrapperMixin;delete isFunction;delete unknown;delete ns;delete arguments.callee}).call(null);
 
-- packed / shrinked / encoded - 1.433 byte :
-//eval(function(p,a,c,k,e,r){e=function(c){return(c<a?'':e(parseInt(c/a)))+((c=c%a)>35?String.fromCharCode(c+29):c.toString(36))};if(!''.replace(/^/,String)){while(c--)r[e(c)]=k[c]||e(c);k=[function(e){return r[e]}];e=function(){return'\\w+'};c=1};while(c--)if(k[c])p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c]);return p}('9 i=(2(c,d){9 e=((3&&(3.w===3)&&w)||3),j="A [[i]] C D t k E G k [[7]] W - N [[6]] .",l="A [[i]] C D t k E G k [[r]]  S (/ K).",1=(2(a){g(J a=="2")}),8=(2(a){F(a){M(s U(a));}});d=(2(a){9 b=s a;g((b&&1(b.H)&&1(b.I)&&a)||5)})(((1(d)&&d)||(1(e.r)&&e.r))||(2(){}));c=(((c&&1(c.h)&&1(c.m)&&c)||(e.7&&1(e.7.h)&&1(e.7.m)&&e.7)||(e.6&&1(e.6.h)&&1(e.6.m)&&e.6))||5);8(!c&&j);8(!d&&l);j=5;l=5;1=5;8=5;f j;f l;f 1;f 8;g(2(){9 b=3,4=[],B=(2(a){b.o({n:b,p:"z",u:a})}),y=(2(a){b.o({n:b,p:"v",u:a})}),x=(2(){b.o({n:b,p:"O"})});c.h(3);d.P(3,4);3.Q=(e.i||R.L);3.z=(2(a){4.T(a);3.q=4.q;B(a)});3.v=(2(){9 a=4.V();F(4.q===0){x()}y(a);g a})})})();',59,59,'|isFunction|function|this|list|null|EventDispatcher|EventTargetProvider|throwImplementationError|var||||||delete|return|register|Queue|strErrorETP|the|strErrorLWM|unsubscribe|target|dispatchEvent|type|length|ListWrapperMixin|new|requires|elm|dequeue|window|onEmpty|onDequeue|enqueue|This|onEnqueue|implementation|badly|presence|if|of|item|size|typeof|Interface|callee|throw|aka|empty|call|constructor|arguments|Mixin|push|ReferenceError|shift|singleton'.split('|'),0,{}));
+- packed / shrinked           - 1.525 byte :
+(function(f,g,h){var i,isFunction=(function(a){return(typeof a=="function")});g=((isFunction(g)&&g)||(f&&isFunction(f.ListWrapperMixin)&&f.ListWrapperMixin)||(isFunction(this.ListWrapperMixin)&&this.ListWrapperMixin)||i);h=((h&&isFunction(h.register)&&isFunction(h.unsubscribe)&&h)||(f&&f.EventTargetProvider&&isFunction(f.EventTargetProvider.register)&&isFunction(f.EventTargetProvider.unsubscribe)&&f.EventTargetProvider)||(this.EventTargetProvider&&isFunction(this.EventTargetProvider.register)&&isFunction(this.EventTargetProvider.unsubscribe)&&this.EventTargetProvider)||i);if(!g){throw(new ReferenceError("This [[Queue]] implementation requires the presence of the [[ListWrapperMixin]]  Mixin (/ Interface)."));}if(!h){throw(new ReferenceError("This [[Queue]] implementation requires the presence of the [[EventTargetProvider]] singleton - aka [[EventDispatcher]]."));}f=(f||this);f["Queue"]=(function(c,d,e){return(function(){var b=this,list=[],onEnqueue=(function(a){b.dispatchEvent({target:b,type:"enqueue",elm:a})}),onDequeue=(function(a){b.dispatchEvent({target:b,type:"dequeue",elm:a})}),onEmpty=(function(){b.dispatchEvent({target:b,type:"empty"})});e.register(this);d.call(this,list);this.constructor=c.Queue;this.enqueue=(function(a){list.push(a);this.length=list.length;onEnqueue(a)});this.dequeue=(function(){var a=list.shift();if(list.length===0){onEmpty()}onDequeue(a);return a})})})(f,g,h);h=g=isFunction=i=f=null;delete h;delete g;delete isFunction;delete i;delete f;delete arguments.callee}).call(null);
+
+- packed / shrinked / encoded - 1.319 byte :
+eval(function(p,a,c,k,e,r){e=function(c){return(c<a?'':e(parseInt(c/a)))+((c=c%a)>35?String.fromCharCode(c+29):c.toString(36))};if(!''.replace(/^/,String)){while(c--)r[e(c)]=k[c]||e(c);k=[function(e){return r[e]}];e=function(){return'\\w+'};c=1};while(c--)if(k[c])p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c]);return p}('(3(f,g,h){q i,2=(3(a){r(Q a=="3")});g=((2(g)&&g)||(f&&2(f.7)&&f.7)||(2(1.7)&&1.7)||i);h=((h&&2(h.9)&&2(h.k)&&h)||(f&&f.4&&2(f.4.9)&&2(f.4.k)&&f.4)||(1.4&&2(1.4.9)&&2(1.4.k)&&1.4)||i);o(!g){t(u v("x [[j]] C B 8 A s 8 [[7]]  J (/ N)."));}o(!h){t(u v("x [[j]] C B 8 A s 8 [[4]] M - O [[K]]."));}f=(f||1);f["j"]=(3(c,d,e){r(3(){q b=1,5=[],z=(3(a){b.p({n:b,m:"D",E:a})}),F=(3(a){b.p({n:b,m:"G",E:a})}),H=(3(){b.p({n:b,m:"T"})});e.9(1);d.y(1,5);1.I=c.j;1.D=(3(a){5.S(a);1.l=5.l;z(a)});1.G=(3(){q a=5.R();o(5.l===0){H()}F(a);r a})})})(f,g,h);h=g=2=i=f=w;6 h;6 g;6 2;6 i;6 f;6 P.L}).y(w);',56,56,'|this|isFunction|function|EventTargetProvider|list|delete|ListWrapperMixin|the|register||||||||||Queue|unsubscribe|length|type|target|if|dispatchEvent|var|return|of|throw|new|ReferenceError|null|This|call|onEnqueue|presence|requires|implementation|enqueue|elm|onDequeue|dequeue|onEmpty|constructor|Mixin|EventDispatcher|callee|singleton|Interface|aka|arguments|typeof|shift|push|empty'.split('|'),0,{}));
+
+
+*/ /*
+
+
+  [closure-compiler(Simple) + edwards-packer(encoded)]
+
+
+- combined                    - 1.195 byte :
+eval(function(p,a,c,k,e,r){e=function(c){return(c<a?'':e(parseInt(c/a)))+((c=c%a)>35?String.fromCharCode(c+29):c.toString(36))};if(!''.replace(/^/,String)){while(c--)r[e(c)]=k[c]||e(c);k=[function(e){return r[e]}];e=function(){return'\\w+'};c=1};while(c--)if(k[c])p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c]);return p}('(3(a,d,c){q h,b=3(i){p L i=="3"};d=b(d)&&d||a&&b(a.5)&&a.5||b(1.5)&&1.5||h;c=c&&b(c.7)&&b(c.o)&&c||a&&a.2&&b(a.2.7)&&b(a.2.o)&&a.2||1.2&&b(1.2.7)&&b(1.2.o)&&1.2||h;E(!d)v w x("y [[8]] B D 6 r s 6 [[5]]  J (/ N).");E(!c)v w x("y [[8]] B D 6 r s 6 [[2]] O - G [[P]].");a=a||1;a.8=3(i,j,k){p 3(){q e=1,f=[];k.7(1);j.A(1,f);1.F=i.8;1.C=3(g){f.Q(g);1.l=f.l;e.m({9:e,n:"C",z:g})};1.u=3(){q g=f.H();f.l===0&&e.m({9:e,n:"I"});e.m({9:e,n:"u",z:g});p g}}}(a,d,c);c=d=b=h=a=t;4 c;4 d;4 b;4 h;4 a;4 M.K}).A(t);',53,53,'|this|EventTargetProvider|function|delete|ListWrapperMixin|the|register|Queue|target||||||||||||length|dispatchEvent|type|unsubscribe|return|var|presence|of|null|dequeue|throw|new|ReferenceError|This|elm|call|implementation|enqueue|requires|if|constructor|aka|shift|empty|Mixin|callee|typeof|arguments|Interface|singleton|EventDispatcher|push'.split('|'),0,{}));
 
 
 */ /*
