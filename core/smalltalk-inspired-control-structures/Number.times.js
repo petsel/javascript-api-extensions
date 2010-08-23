@@ -1,4 +1,4 @@
-﻿/*
+/*
   [Number.times] and its relatives got implemented close to mozilla.org's
   [Array.forEach] remaining [Number] specific and Smalltalk inspired though.
 
@@ -13,46 +13,47 @@
 */
 
 
-
-Number.prototype.times = (function (fct, target) { // prototypal implementation
-
-  var i = -1, num = Number(this);
-
-  num = ((isFinite(num) && (typeof fct == "function") && Math.floor(num)) || i);
-  target = ((((typeof target == "undefined") || ((typeof target == "obj") && !target)) && null) || target);
-
-  while (++i < num) {
-    fct.call(target, i, num, fct);
-  }
-});
-//[http://dean.edwards.name/packer/] - shrinked:
-//Number.prototype.times=(function(a,b){var i=-1,num=Number(this);num=((isFinite(num)&&(typeof a=="function")&&Math.floor(num))||i);b=((((typeof b=="undefined")||((typeof b=="obj")&&!b))&&null)||b);while(++i<num){a.call(b,i,num,a)}});
+(function () {
+  var sh/*scripting_host|global-object*/ = this, Num = sh.Number, NumProto = Num.prototype, StrProto = sh.String.prototype;
 
 
+  NumProto.times = (function (NUMBER, IS_FINITE, MATH_FLOOR) {
+    return (function (fct, target) { // prototypal implementation
 
-Number.times = (function () { // static implementation
+      var i = -1, num = NUMBER(this);
 
-  var times = (Number.prototype.times || (function () {}));
+      num = ((IS_FINITE(num) && (typeof fct == "function") && MATH_FLOOR(num)) || i);
+      target = (target || (((typeof target == "undefined") || (typeof target == "object")) ? null : target));
 
-  return (function (num, fct, target) {
-    times.call(Number(num), fct, target);
-  });
-})();
-//[http://dean.edwards.name/packer/] - shrinked:
-//Number.times=(function(){var d=(Number.prototype.times||(function(){}));return(function(a,b,c){d.call(Number(a),b,c)})})();
+      while (++i < num) {
+        fct.call(target, i, num, fct);
+      }
+    });
+  })(Num, sh.isFinite, sh.Math.floor);
 
 
+  Num.times = (function (times) {
+    return (function (num, fct, target) { // static implementation
 
-String.prototype.times = (function () { // prototypal implementation
+      times.call(num, fct, target);
+    });
+  })(NumProto.times);
 
-  var times = (Number.prototype.times || (function () {}));
 
-  return (function (fct, target) {
-    times.apply(Number(this), arguments);
-  });
-})();
-//[http://dean.edwards.name/packer/] - shrinked:
-//String.prototype.times=(function(){var c=(Number.prototype.times||(function(){}));return(function(a,b){c.apply(Number(this),arguments)})})();
+  StrProto.times = (function (times) {
+    return (function (fct, target) { // prototypal implementation
+
+      times.apply(this, arguments);
+    });
+  })(NumProto.times);
+
+
+  StrProto = NumProto = Num = sh = null;
+  delete StrProto; delete NumProto; delete Num; delete sh;
+
+
+  delete arguments.callee;
+}).call(null/*does force the internal [this] context pointing to the [global] object*/);
 
 
 
@@ -83,3 +84,32 @@ arr.length.times(function (idx/*, len, fct*/) {
 
   print("arr[" + idx + "] : " + arr[idx]);
 });
+
+
+/*
+
+
+  [http://closure-compiler.appspot.com/home]
+
+
+- Whitespace only - 743 byte :
+(function(){var sh=this,Num=sh.Number,NumProto=Num.prototype,StrProto=sh.String.prototype;NumProto.times=function(NUMBER,IS_FINITE,MATH_FLOOR){return function(fct,target){var i=-1,num=NUMBER(this);num=IS_FINITE(num)&&typeof fct=="function"&&MATH_FLOOR(num)||i;target=target||(typeof target=="undefined"||typeof target=="object"?null:target);while(++i<num)fct.call(target,i,num,fct)}}(Num,sh.isFinite,sh.Math.floor);Num.times=function(times){return function(num,fct,target){times.call(num,fct,target)}}(NumProto.times);StrProto.times=function(times){return function(fct,target){times.apply(this,arguments)}}(NumProto.times);StrProto=NumProto=Num=sh=null;delete StrProto;delete NumProto;delete Num;delete sh;delete arguments.callee}).call(null);
+
+- Simple          - 510 byte :
+(function(){var a=this,c=a.Number,d=c.prototype,h=a.String.prototype;d.times=function(e,i,j){return function(f,b){var k=-1,g=e(this);g=i(g)&&typeof f=="function"&&j(g)||k;for(b=b||(typeof b=="undefined"||typeof b=="object"?null:b);++k<g;)f.call(b,k,g,f)}}(c,a.isFinite,a.Math.floor);c.times=function(e){return function(i,j,f){e.call(i,j,f)}}(d.times);h.times=function(e){return function(){e.apply(this,arguments)}}(d.times);h=d=c=a=null;delete h;delete d;delete c;delete a;delete arguments.callee}).call(null);
+
+
+*/ /*
+
+
+  [http://dean.edwards.name/packer/]
+
+
+- packed                      - 768 byte :
+(function(){var sh=this,Num=sh.Number,NumProto=Num.prototype,StrProto=sh.String.prototype;NumProto.times=(function(NUMBER,IS_FINITE,MATH_FLOOR){return(function(fct,target){var i=-1,num=NUMBER(this);num=((IS_FINITE(num)&&(typeof fct=="function")&&MATH_FLOOR(num))||i);target=(target||(((typeof target=="undefined")||(typeof target=="object"))?null:target));while(++i<num){fct.call(target,i,num,fct)}})})(Num,sh.isFinite,sh.Math.floor);Num.times=(function(times){return(function(num,fct,target){times.call(num,fct,target)})})(NumProto.times);StrProto.times=(function(times){return(function(fct,target){times.apply(this,arguments)})})(NumProto.times);StrProto=NumProto=Num=sh=null;delete StrProto;delete NumProto;delete Num;delete sh;delete arguments.callee}).call(null);
+
+- packed / shrinked           - 633 byte :
+(function(){var f=this,Num=f.Number,NumProto=Num.prototype,StrProto=f.String.prototype;NumProto.times=(function(c,d,e){return(function(a,b){var i=-1,num=c(this);num=((d(num)&&(typeof a=="function")&&e(num))||i);b=(b||(((typeof b=="undefined")||(typeof b=="object"))?null:b));while(++i<num){a.call(b,i,num,a)}})})(Num,f.isFinite,f.Math.floor);Num.times=(function(d){return(function(a,b,c){d.call(a,b,c)})})(NumProto.times);StrProto.times=(function(c){return(function(a,b){c.apply(this,arguments)})})(NumProto.times);StrProto=NumProto=Num=f=null;delete StrProto;delete NumProto;delete Num;delete f;delete arguments.callee}).call(null);
+
+
+*/ 
