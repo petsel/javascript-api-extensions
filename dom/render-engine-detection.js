@@ -1,7 +1,7 @@
 
 
 (function (ns/*[custom_namespace]*/) {
-  var sh = this/*[global|scripting_host]*/,
+  var sh = this/*[global_object|scripting_host]*/,
 
 
   doc = (sh && sh.document),
