@@ -40,7 +40,7 @@
 (function (ns) {
 
 
-  ns = (ns/*[custom_namespace]*/ || this/*[global|scripting_host]*/);
+  ns = (ns/*[custom_namespace]*/ || this/*[global_object|scripting_host]*/);
   ns["EventTargetProvider"] = (function () { // [EventTargetProvider] Module/Singleton becomes an implementation either - if provided - of a custom namespace otherwise of the global namespace.
 
 
