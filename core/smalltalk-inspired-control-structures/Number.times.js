@@ -14,7 +14,7 @@
 
 
 (function () {
-  var sh/*scripting_host|global-object*/ = this, Num = sh.Number, NumProto = Num.prototype, StrProto = sh.String.prototype;
+  var sh/*scripting_host|global_object*/ = this, Num = sh.Number, NumProto = Num.prototype, StrProto = sh.String.prototype;
 
 
   NumProto.times = (function (NUMBER, IS_FINITE, MATH_FLOOR) {
