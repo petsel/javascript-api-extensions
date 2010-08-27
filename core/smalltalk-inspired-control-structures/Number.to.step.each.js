@@ -17,7 +17,7 @@
 
 //[each], [go], [does], [todo], [serve] or [serves] because [do] is an reserved word and already in use as part of the do-while iterator statement.
   each = (function (MATH_ABS) {
-    return (function (from, to,  fct, target) {
+    return (function (from, to, fct, target) {
 
       if (typeof fct == "function") {
         target = (target || (((typeof target == "undefined") || (typeof target == "object")) ? null : target));
@@ -137,8 +137,8 @@
   })(NumberIterator);
 
 
-  NumberIterator = getNumber = each = StrProto = NumProto = Num = sh = null;
-  delete NumberIterator; delete getNumber, delete each;
+  NumberIterator = getNumber = eachStep = each = StrProto = NumProto = Num = sh = null;
+  delete NumberIterator; delete getNumber; delete eachStep; delete each;
   delete StrProto; delete NumProto; delete Num; delete sh;
 
 
@@ -179,53 +179,49 @@
 */
 
 
-(4).to(11).each(function (idx, len, fct) { // callback exactly as in [Number.times]
+(4).to(11).step(3).each(function (idx, len, fct) { // callback exactly as in [Number.times]
   print("hallo - idx : " + idx + " - len : " + len + " - fct : " + fct + "\n");
 });
-print("\n"); // 8 times the function
+print("\n"); // 3 times the function
 
 
-var callback = (function (idx, len, fct, count, from, to) { // callback similar to [Number.times] - appended arguments array though.
-  print("hallo - idx : " + idx + " - len : " + len/* + " - fct : " + fct*/ + " - count : " + count + " - from : " + from + " - to : " + to + "\n");
+var callback = (function (idx, len, fct, count, from, to, step) { // callback similar to [Number.times] - appended arguments array though.
+  print("hallo - idx : " + idx + " - len : " + len/* + " - fct : " + fct*/ + " - count : " + count + " - from : " + from + " - to : " + to + " - step : " + step + "\n");
 });
 
 
-(17).to(21).each(callback); // 5 times the function
+(1).to(2).each(callback); // 2 times the function
 print("\n");
 
-("19.5555").to("20").each(callback); // 2 times the function
+("19.5555").to("20").step(2).each(callback); // 1 times the function
 print("\n");
 
-("18").to("20.9999999999999999999").each(callback); // 4 times the function
+("18").to("20.9999999999999999999").step(2).each(callback); // 2 times the function
 print("\n");
 
-(-1).to("1").each(callback); // 3 times the function
+(-1).to("1").step(3).each(callback); // 1 times the function
 print("\n");
 
-(2).to("-1").each(callback); // 4 times the function
+(2).to("-1").step(2).each(callback); // 2 times the function
 print("\n");
 
-(1).to("1").each(callback); // 1 times the function
+(1).to("1").step(5).each(callback); // 1 times the function
 print("\n");
 
-("0").to(0).each(callback); // 1 times the function
+("0").to(0).step(9).each(callback); // 1 times the function
 print("\n");
 
-("-1").to(-1).each(callback); // 1 times the function
+("-1").to(-1).step(0).each(callback); // 1 times the function
 print("\n");
 
-print(("18").to("21") == 18);    // true
-print(("18").to("21") === 18);  // false
-print(("18").to("21") == "18");  // true
-print(("18").to("21") === "18");// false
+("-3").to(12).step(3).each(callback); // 6 times the function
 print("\n");
 
-print(("18").to("21") == 18);              // true
-print(("18").to("21").valueOf() === 18);  // false
-print(("18").to("21") == "18");            // true
-print(("18").to("21").valueOf() === "18");// true
+("-3").to(12).step(5).each(callback); // 4 times the function
 print("\n");
 
-print(("20").to("1000") / 5); // 4;
-print(("20").to() * 4); // 80;
+(29).to(-3).step(11).each(callback); // 3 times the function
+print("\n");
+
+(29).to(-4).step(11).each(callback); // 4 times the function
 print("\n");

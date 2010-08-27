@@ -66,7 +66,7 @@
     return (function (startValue, endValue) {
 
     //in almost every case the initial value was a primitive "number" or "string" value.
-      initialValue = VALUE_OF.call(startValue).valueOf();
+      var initialValue = VALUE_OF.call(startValue).valueOf();
 
       startValue = GET_NUMBER(startValue);
       endValue = GET_NUMBER(endValue);
@@ -98,7 +98,7 @@
 
 
   NumberIterator = getNumber = each = StrProto = NumProto = Num = sh = null;
-  delete NumberIterator; delete getNumber, delete each;
+  delete NumberIterator; delete getNumber; delete each;
   delete StrProto; delete NumProto; delete Num; delete sh;
 
 
