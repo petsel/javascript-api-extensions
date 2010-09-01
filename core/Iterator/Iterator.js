@@ -24,37 +24,32 @@
 
 
 
-(function (global) { // Iterator[EntryIteratorMixin, EntryIterator, PropertyIterator].
+(function (ns/*[custom_namespace]*/) { // Iterator[EntryIteratorMixin, EntryIterator, PropertyIterator].
+  var sh = this/*[global_object|scripting_host]*/;
 
 
-  if (!global.Object || (typeof global.Object.keys != "function")) {
+  if (!sh.Object || (typeof sh.Object.keys != "function")) {
     // you might need to check back with: [http://github.com/petsel/javascript-api-extensions/blob/master/core/Object/Object.keys.js]
     throw (new ReferenceError("Some [[Iterator]] implementations require the presence of the [[Object]] extensions module [Object.keys]."));
   }
-  if (!global.Array || (typeof global.Array.make != "function")) {
+  if (!sh.Array || (typeof sh.Array.make != "function")) {
     // you might need to check back with: [http://github.com/petsel/javascript-api-extensions/blob/master/core/Array/Array.make.detect.js]
     throw (new ReferenceError("Some [[Iterator]] implementations require the presence of the [[Array]] extensions module base [Array.make.detect]."));
   }
 
 
-  global["Iterator"] = (function (sh) {
+  (ns||sh)["Iterator"] = (function (NAMESPACE, GLOBAL) { // [Iterator] becomes an implementation either - if provided - of a custom namespace otherwise of the global namespace.
 
 
-    var keys = sh.Object.keys, makeArray = sh.Array.make
-
-    regXClassName = (/^\[object\s+(.*)\]$/), // you might need to check back with: [http://github.com/petsel/javascript-api-extensions/blob/master/core/global/type-detection/type-detection.js]
-    exposeImplementation = sh.Object.prototype.toString,
-
-    isString = (function () {
-      var regXBaseClass = (/^\[object\s+String\]$/), expose = exposeImplementation;
+    var isString = (function (regXBaseClass, expose) {
       return (function (obj/*:[object|value]*/) {
+
         return regXBaseClass.test(expose.call(obj));
       });
-    })(),
+    })((/^\[object\s+String\]$/), GLOBAL.Object.prototype.toString),
 
     isKindOfList = (function (obj) {return (obj && (typeof obj.length == "number") && isFinite(obj.length));}),
     hasItemMethod = (function (obj) {return (obj && obj.item && ((typeof obj.item == "function") || (typeof obj.item == "object")));}),
-
 
     createGetListItemFallbackByCurrentType = (function (obj) {
       return ((isString(obj) && (function (str, idx) {
@@ -147,15 +142,15 @@
       })(isKindOfList, createGetListItemFallbackByCurrentType, EndOfIteration, isEndOfIteration),
 
 
-      "EntryIterator": (function (isListLike, makeArray, sh) {
+      "EntryIterator": (function (isListLike, make, ns) {
 
         return (function (obj) {
           if (isListLike(obj)) {
 
-            var list, IteratorMixin = sh.Iterator.EntryIteratorMixin;
+            var list, IteratorMixin = ns.Iterator.EntryIteratorMixin;
             this.compile = (function (obj) {
 
-              list = IteratorMixin.call(makeArray(obj));
+              list = IteratorMixin.call(make(obj));
 
               this.hasPrevious = list.hasPrevious;
               this.hasNext = list.hasNext;
@@ -176,14 +171,14 @@
             return this.compile(obj);
           }
         });
-      })(isKindOfList, makeArray, sh),
+      })(isKindOfList, GLOBAL.Array.make, NAMESPACE),
 
 
-      "PropertyIterator": (function (keys, sh) {
+      "PropertyIterator": (function (keys, ns) {
 
         return (function (obj) {
 
-          var list, IteratorMixin = sh.Iterator.EntryIteratorMixin,
+          var list, IteratorMixin = ns.Iterator.EntryIteratorMixin,
           getPrevious, getNext, getIndex, isEoI;
 
           this.compile = (function (obj) {
@@ -220,12 +215,12 @@
           });
           return this.compile(obj);
         });
-      })(keys, sh),
+      })(GLOBAL.Object.keys, NAMESPACE),
 
 
       "mixin" : (function (IteratorType/*:[object|string]*/, obj) {
         if (obj && ((typeof obj == "object") || (typeof obj == "function"))) {
-          var Iterator = sh.Iterator;
+          var Iterator = NAMESPACE.Iterator;
           if (isString(IteratorType) && (typeof Iterator[IteratorType+"Mixin"] == "function")) {
             Iterator[IteratorType+"Mixin"].call(obj);
           } else if (typeof IteratorType == "function") {
@@ -235,7 +230,7 @@
         return obj;
       }),
       "create" : (function (IteratorType/*:[object|string]*/, obj) {
-        var iter, Iterator = sh.Iterator;
+        var iter, Iterator = NAMESPACE.Iterator;
         if (obj && ((typeof obj == "object") || (typeof obj == "function"))) {
           if (isString(IteratorType) && (typeof Iterator[IteratorType] == "function")) {
             iter = (new Iterator[IteratorType](obj));
@@ -246,10 +241,15 @@
         return iter;
       })
     };
-  })(global);
+  })((ns||sh), sh);
+
+
+  sh = ns = null;
+  delete sh; delete ns;
+
 
   delete arguments.callee;
-})((this && (this.window === this) && window) || this);
+}).call(null/*does force the internal [this] context pointing to the [global] object*/ /*[, optional_namespace_Iterator_is_supposed_to_be_bound_to]*/);
 
 
 /*
@@ -257,11 +257,38 @@
 
   [http://closure-compiler.appspot.com/home]
 
-- Whitespace only - 4.214 byte
-(function(global){if(!global.Object||typeof global.Object.keys!="function")throw new ReferenceError("Some [[Iterator]] implementations require the presence of the [[Object]] extensions module [Object.keys].");if(!global.Array||typeof global.Array.make!="function")throw new ReferenceError("Some [[Iterator]] implementations require the presence of the [[Array]] extensions module base [Array.make.detect].");global["Iterator"]=function(sh){var keys=sh.Object.keys,makeArray=sh.Array.make;regXClassName=/^\[object\s+(.*)\]$/,exposeImplementation=sh.Object.prototype.toString,isString=function(){var regXBaseClass=/^\[object\s+String\]$/,expose=exposeImplementation;return function(obj){return regXBaseClass.test(expose.call(obj))}}(),isKindOfList=function(obj){return obj&&typeof obj.length=="number"&&isFinite(obj.length)},hasItemMethod=function(obj){return obj&&obj.item&&(typeof obj.item=="function"||typeof obj.item=="object")},createGetListItemFallbackByCurrentType=function(obj){return isString(obj)&&function(str,idx){return str.charAt(idx)}||hasItemMethod(obj)&&function(obj,idx){return obj.item(idx)}||function(obj,idx,ndf){return ndf}},EndOfIteration=function(){var obj={};obj.constructor.toString=function(){return"[object EoI]"};obj.toString=function(){return"EoI"};obj.valueOf=function(){return null};return obj}(),isEndOfIteration=function(EoI){return function(obj){return obj===EoI}}(EndOfIteration);return{EntryIteratorMixin:function(isListLike,createGetListItemFallback,EoI,isEoI){return function(){if(isListLike(this)){var idx=-1,list=this,getListItem=createGetListItemFallback(list);this.hasPrevious=function(){return idx>0};this.hasNext=function(){return idx<list.length-1};this.getPrevious=function(){var obj;if(idx>0){obj=list[--idx];obj=typeof obj!="undefined"||!(idx in list)?obj:getListItem(list,idx)}else{idx=-1;obj=EoI}return obj};this.getNext=function(){var obj;if(idx<list.length-1){obj=list[++idx];obj=typeof obj!="undefined"||!(idx in list)?obj:getListItem(list,idx)}else{idx=list.length;obj=EoI}return obj};this.getIndex=function(){return idx<list.length&&idx>-1?idx:EoI};this.setIndex=function(num){num=~~(1*num);idx=num<=-1&&-1||num>=list.length&&list.length||num};this.isEoI=isEoI}return this}}(isKindOfList,createGetListItemFallbackByCurrentType,EndOfIteration,isEndOfIteration),EntryIterator:function(isListLike,makeArray,sh){return function(obj){if(isListLike(obj)){var list,IteratorMixin=sh.Iterator.EntryIteratorMixin;this.compile=function(obj){list=IteratorMixin.call(makeArray(obj));this.hasPrevious=list.hasPrevious;this.hasNext=list.hasNext;this.getPrevious=list.getPrevious;this.getNext=list.getNext;this.getIndex=list.getIndex;this.setIndex=list.setIndex;this.isEoI=list.isEoI;this.size=function(){return list.length};return this};return this.compile(obj)}}}(isKindOfList,makeArray,sh),PropertyIterator:function(keys,sh){return function(obj){var list,IteratorMixin=sh.Iterator.EntryIteratorMixin,getPrevious,getNext,getIndex,isEoI;this.compile=function(obj){list=IteratorMixin.call(keys(obj)),getPrevious=list.getPrevious;getNext=list.getNext;getIndex=list.getIndex;isEoI=list.isEoI;this.hasPrevious=list.hasPrevious;this.hasNext=list.hasNext;this.getPrevious=function(){var key=getPrevious();return!isEoI(key)?obj[key]:key};this.getNext=function(){var key=getNext();return!isEoI(key)?obj[key]:key};this.getKey=function(){var idx=getIndex();return!isEoI(idx)?list[idx]:idx};this.isEoI=isEoI;this.size=function(){return list.length};return this};return this.compile(obj)}}(keys,sh),mixin:function(IteratorType,obj){if(obj&&(typeof obj=="object"||typeof obj=="function")){var Iterator=sh.Iterator;if(isString(IteratorType)&&typeof Iterator[IteratorType+"Mixin"]=="function")Iterator[IteratorType+"Mixin"].call(obj);else if(typeof IteratorType=="function")IteratorType.call(obj)}return obj},create:function(IteratorType,obj){var iter,Iterator=sh.Iterator;if(obj&&(typeof obj=="object"||typeof obj=="function"))if(isString(IteratorType)&&typeof Iterator[IteratorType]=="function")iter=new Iterator[IteratorType](obj);else if(typeof IteratorType=="function")iter=new IteratorType(obj);return iter}}}(global);delete arguments.callee})(this&&this.window===this&&window||this);
 
-- Simple          - 3.309 byte
-(function(k){if(!k.Object||typeof k.Object.keys!="function")throw new ReferenceError("Some [[Iterator]] implementations require the presence of the [[Object]] extensions module [Object.keys].");if(!k.Array||typeof k.Array.make!="function")throw new ReferenceError("Some [[Iterator]] implementations require the presence of the [[Array]] extensions module base [Array.make.detect].");k.Iterator=function(i){var n=i.Object.keys,o=i.Array.make;regXClassName=/^\[object\s+(.*)\]$/;exposeImplementation=i.Object.prototype.toString;isString=function(){var a=/^\[object\s+String\]$/,c=exposeImplementation;return function(e){return a.test(c.call(e))}}();isKindOfList=function(a){return a&&typeof a.length=="number"&&isFinite(a.length)};hasItemMethod=function(a){return a&&a.item&&(typeof a.item=="function"||typeof a.item=="object")};createGetListItemFallbackByCurrentType=function(a){return isString(a)&&function(c,e){return c.charAt(e)}||hasItemMethod(a)&&function(c,e){return c.item(e)}||function(c,e,f){return f}};EndOfIteration=function(){var a={};a.constructor.toString=function(){return"[object EoI]"};a.toString=function(){return"EoI"};a.valueOf=function(){return null};return a}();isEndOfIteration=function(a){return function(c){return c===a}}(EndOfIteration);return{EntryIteratorMixin:function(a,c,e,f){return function(){if(a(this)){var b=-1,g=this,j=c(g);this.hasPrevious=function(){return b>0};this.hasNext=function(){return b<g.length-1};this.getPrevious=function(){var d;if(b>0){d=g[--b];d=typeof d!="undefined"||!(b in g)?d:j(g,b)}else{b=-1;d=e}return d};this.getNext=function(){var d;if(b<g.length-1){d=g[++b];d=typeof d!="undefined"||!(b in g)?d:j(g,b)}else{b=g.length;d=e}return d};this.getIndex=function(){return b<g.length&&b>-1?b:e};this.setIndex=function(d){d=~~(1*d);b=d<=-1&&-1||d>=g.length&&g.length||d};this.isEoI=f}return this}}(isKindOfList,createGetListItemFallbackByCurrentType,EndOfIteration,isEndOfIteration),EntryIterator:function(a,c,e){return function(f){if(a(f)){var b,g=e.Iterator.EntryIteratorMixin;this.compile=function(j){b=g.call(c(j));this.hasPrevious=b.hasPrevious;this.hasNext=b.hasNext;this.getPrevious=b.getPrevious;this.getNext=b.getNext;this.getIndex=b.getIndex;this.setIndex=b.setIndex;this.isEoI=b.isEoI;this.size=function(){return b.length};return this};return this.compile(f)}}}(isKindOfList,o,i),PropertyIterator:function(a,c){return function(e){var f,b=c.Iterator.EntryIteratorMixin,g,j,d,l;this.compile=function(m){f=b.call(a(m));g=f.getPrevious;j=f.getNext;d=f.getIndex;l=f.isEoI;this.hasPrevious=f.hasPrevious;this.hasNext=f.hasNext;this.getPrevious=function(){var h=g();return!l(h)?m[h]:h};this.getNext=function(){var h=j();return!l(h)?m[h]:h};this.getKey=function(){var h=d();return!l(h)?f[h]:h};this.isEoI=l;this.size=function(){return f.length};return this};return this.compile(e)}}(n,i),mixin:function(a,c){if(c&&(typeof c=="object"||typeof c=="function")){var e=i.Iterator;if(isString(a)&&typeof e[a+"Mixin"]=="function")e[a+"Mixin"].call(c);else typeof a=="function"&&a.call(c)}return c},create:function(a,c){var e,f=i.Iterator;if(c&&(typeof c=="object"||typeof c=="function"))if(isString(a)&&typeof f[a]=="function")e=new f[a](c);else if(typeof a=="function")e=new a(c);return e}}}(k);delete arguments.callee})(this&&this.window===this&&window||this);
+- Whitespace only - 4.143 byte
+(function(ns){var sh=this;if(!sh.Object||typeof sh.Object.keys!="function")throw new ReferenceError("Some [[Iterator]] implementations require the presence of the [[Object]] extensions module [Object.keys].");if(!sh.Array||typeof sh.Array.make!="function")throw new ReferenceError("Some [[Iterator]] implementations require the presence of the [[Array]] extensions module base [Array.make.detect].");(ns||sh)["Iterator"]=function(NAMESPACE,GLOBAL){var isString=function(regXBaseClass,expose){return function(obj){return regXBaseClass.test(expose.call(obj))}}(/^\[object\s+String\]$/,GLOBAL.Object.prototype.toString),isKindOfList=function(obj){return obj&&typeof obj.length=="number"&&isFinite(obj.length)},hasItemMethod=function(obj){return obj&&obj.item&&(typeof obj.item=="function"||typeof obj.item=="object")},createGetListItemFallbackByCurrentType=function(obj){return isString(obj)&&function(str,idx){return str.charAt(idx)}||hasItemMethod(obj)&&function(obj,idx){return obj.item(idx)}||function(obj,idx,ndf){return ndf}},EndOfIteration=function(){var obj={};obj.constructor.toString=function(){return"[object EoI]"};obj.toString=function(){return"EoI"};obj.valueOf=function(){return null};return obj}(),isEndOfIteration=function(EoI){return function(obj){return obj===EoI}}(EndOfIteration);return{EntryIteratorMixin:function(isListLike,createGetListItemFallback,EoI,isEoI){return function(){if(isListLike(this)){var idx=-1,list=this,getListItem=createGetListItemFallback(list);this.hasPrevious=function(){return idx>0};this.hasNext=function(){return idx<list.length-1};this.getPrevious=function(){var obj;if(idx>0){obj=list[--idx];obj=typeof obj!="undefined"||!(idx in list)?obj:getListItem(list,idx)}else{idx=-1;obj=EoI}return obj};this.getNext=function(){var obj;if(idx<list.length-1){obj=list[++idx];obj=typeof obj!="undefined"||!(idx in list)?obj:getListItem(list,idx)}else{idx=list.length;obj=EoI}return obj};this.getIndex=function(){return idx<list.length&&idx>-1?idx:EoI};this.setIndex=function(num){num=~~(1*num);idx=num<=-1&&-1||num>=list.length&&list.length||num};this.isEoI=isEoI}return this}}(isKindOfList,createGetListItemFallbackByCurrentType,EndOfIteration,isEndOfIteration),EntryIterator:function(isListLike,make,ns){return function(obj){if(isListLike(obj)){var list,IteratorMixin=ns.Iterator.EntryIteratorMixin;this.compile=function(obj){list=IteratorMixin.call(make(obj));this.hasPrevious=list.hasPrevious;this.hasNext=list.hasNext;this.getPrevious=list.getPrevious;this.getNext=list.getNext;this.getIndex=list.getIndex;this.setIndex=list.setIndex;this.isEoI=list.isEoI;this.size=function(){return list.length};return this};return this.compile(obj)}}}(isKindOfList,GLOBAL.Array.make,NAMESPACE),PropertyIterator:function(keys,ns){return function(obj){var list,IteratorMixin=ns.Iterator.EntryIteratorMixin,getPrevious,getNext,getIndex,isEoI;this.compile=function(obj){list=IteratorMixin.call(keys(obj)),getPrevious=list.getPrevious;getNext=list.getNext;getIndex=list.getIndex;isEoI=list.isEoI;this.hasPrevious=list.hasPrevious;this.hasNext=list.hasNext;this.getPrevious=function(){var key=getPrevious();return!isEoI(key)?obj[key]:key};this.getNext=function(){var key=getNext();return!isEoI(key)?obj[key]:key};this.getKey=function(){var idx=getIndex();return!isEoI(idx)?list[idx]:idx};this.isEoI=isEoI;this.size=function(){return list.length};return this};return this.compile(obj)}}(GLOBAL.Object.keys,NAMESPACE),mixin:function(IteratorType,obj){if(obj&&(typeof obj=="object"||typeof obj=="function")){var Iterator=NAMESPACE.Iterator;if(isString(IteratorType)&&typeof Iterator[IteratorType+"Mixin"]=="function")Iterator[IteratorType+"Mixin"].call(obj);else if(typeof IteratorType=="function")IteratorType.call(obj)}return obj},create:function(IteratorType,obj){var iter,Iterator=NAMESPACE.Iterator;if(obj&&(typeof obj=="object"||typeof obj=="function"))if(isString(IteratorType)&&typeof Iterator[IteratorType]=="function")iter=new Iterator[IteratorType](obj);else if(typeof IteratorType=="function")iter=new IteratorType(obj);return iter}}}(ns||sh,sh);sh=ns=null;delete sh;delete ns;delete arguments.callee}).call(null);
+
+- Simple          - 2.979 byte
+(function(l){var i=this;if(!i.Object||typeof i.Object.keys!="function")throw new ReferenceError("Some [[Iterator]] implementations require the presence of the [[Object]] extensions module [Object.keys].");if(!i.Array||typeof i.Array.make!="function")throw new ReferenceError("Some [[Iterator]] implementations require the presence of the [[Array]] extensions module base [Array.make.detect].");(l||i).Iterator=function(m,n){var o=function(a,c){return function(e){return a.test(c.call(e))}}(/^\[object\s+String\]$/,n.Object.prototype.toString),q=function(a){return a&&typeof a.length=="number"&&isFinite(a.length)},r=function(){var a={};a.constructor.toString=function(){return"[object EoI]"};a.toString=function(){return"EoI"};a.valueOf=function(){return null};return a}(),s=function(a){return function(c){return c===a}}(r);return{EntryIteratorMixin:function(a,c,e,f){return function(){if(a(this)){var b=-1,g=this,j=c(g);this.hasPrevious=function(){return b>0};this.hasNext=function(){return b<g.length-1};this.getPrevious=function(){var d;if(b>0){d=g[--b];d=typeof d!="undefined"||!(b in g)?d:j(g,b)}else{b=-1;d=e}return d};this.getNext=function(){var d;if(b<g.length-1){d=g[++b];d=typeof d!="undefined"||!(b in g)?d:j(g,b)}else{b=g.length;d=e}return d};this.getIndex=function(){return b<g.length&&b>-1?b:e};this.setIndex=function(d){d=~~(1*d);b=d<=-1&&-1||d>=g.length&&g.length||d};this.isEoI=f}return this}}(q,function(a){return o(a)&&function(c,e){return c.charAt(e)}||a&&a.item&&(typeof a.item=="function"||typeof a.item=="object")&&function(c,e){return c.item(e)}||function(c,e,f){return f}},r,s),EntryIterator:function(a,c,e){return function(f){if(a(f)){var b,g=e.Iterator.EntryIteratorMixin;this.compile=function(j){b=g.call(c(j));this.hasPrevious=b.hasPrevious;this.hasNext=b.hasNext;this.getPrevious=b.getPrevious;this.getNext=b.getNext;this.getIndex=b.getIndex;this.setIndex=b.setIndex;this.isEoI=b.isEoI;this.size=function(){return b.length};return this};return this.compile(f)}}}(q,n.Array.make,m),PropertyIterator:function(a,c){return function(e){var f,b=c.Iterator.EntryIteratorMixin,g,j,d,k;this.compile=function(p){f=b.call(a(p));g=f.getPrevious;j=f.getNext;d=f.getIndex;k=f.isEoI;this.hasPrevious=f.hasPrevious;this.hasNext=f.hasNext;this.getPrevious=function(){var h=g();return!k(h)?p[h]:h};this.getNext=function(){var h=j();return!k(h)?p[h]:h};this.getKey=function(){var h=d();return!k(h)?f[h]:h};this.isEoI=k;this.size=function(){return f.length};return this};return this.compile(e)}}(n.Object.keys,m),mixin:function(a,c){if(c&&(typeof c=="object"||typeof c=="function")){var e=m.Iterator;if(o(a)&&typeof e[a+"Mixin"]=="function")e[a+"Mixin"].call(c);else typeof a=="function"&&a.call(c)}return c},create:function(a,c){var e,f=m.Iterator;if(c&&(typeof c=="object"||typeof c=="function"))if(o(a)&&typeof f[a]=="function")e=new f[a](c);else if(typeof a=="function")e=new a(c);return e}}}(l||i,i);i=l=null;delete i;delete l;delete arguments.callee}).call(null);
+
+
+*/ /*
+
+
+  [http://dean.edwards.name/packer/]
+
+
+- packed                      - 4.314 byte :
+(function(ns){var sh=this;if(!sh.Object||(typeof sh.Object.keys!="function")){throw(new ReferenceError("Some [[Iterator]] implementations require the presence of the [[Object]] extensions module [Object.keys]."));}if(!sh.Array||(typeof sh.Array.make!="function")){throw(new ReferenceError("Some [[Iterator]] implementations require the presence of the [[Array]] extensions module base [Array.make.detect]."));}(ns||sh)["Iterator"]=(function(NAMESPACE,GLOBAL){var isString=(function(regXBaseClass,expose){return(function(obj){return regXBaseClass.test(expose.call(obj))})})((/^\[object\s+String\]$/),GLOBAL.Object.prototype.toString),isKindOfList=(function(obj){return(obj&&(typeof obj.length=="number")&&isFinite(obj.length))}),hasItemMethod=(function(obj){return(obj&&obj.item&&((typeof obj.item=="function")||(typeof obj.item=="object")))}),createGetListItemFallbackByCurrentType=(function(obj){return((isString(obj)&&(function(str,idx){return str.charAt(idx)}))||(hasItemMethod(obj)&&(function(obj,idx){return obj.item(idx)}))||(function(obj,idx,ndf){return ndf}))}),EndOfIteration=(function(){var obj={};obj.constructor.toString=(function(){return"[object EoI]"});obj.toString=(function(){return"EoI"});obj.valueOf=(function(){return null});return obj})(),isEndOfIteration=(function(EoI){return(function(obj){return(obj===EoI)})})(EndOfIteration);return{"EntryIteratorMixin":(function(isListLike,createGetListItemFallback,EoI,isEoI){return(function(){if(isListLike(this)){var idx=-1,list=this,getListItem=createGetListItemFallback(list);this.hasPrevious=(function(){return(idx>0)});this.hasNext=(function(){return(idx<(list.length-1))});this.getPrevious=(function(){var obj;if(idx>0){obj=list[--idx];obj=(((typeof obj!="undefined")||!(idx in list))?obj:getListItem(list,idx))}else{idx=-1;obj=EoI}return obj});this.getNext=(function(){var obj;if(idx<(list.length-1)){obj=list[++idx];obj=(((typeof obj!="undefined")||!(idx in list))?obj:getListItem(list,idx))}else{idx=list.length;obj=EoI}return obj});this.getIndex=(function(){return(((idx<list.length)&&(idx>-1))?idx:EoI)});this.setIndex=(function(num){num=(~~(1*num));idx=(((num<=-1)&&-1)||((num>=list.length)&&list.length)||num)});this.isEoI=isEoI}return this})})(isKindOfList,createGetListItemFallbackByCurrentType,EndOfIteration,isEndOfIteration),"EntryIterator":(function(isListLike,make,ns){return(function(obj){if(isListLike(obj)){var list,IteratorMixin=ns.Iterator.EntryIteratorMixin;this.compile=(function(obj){list=IteratorMixin.call(make(obj));this.hasPrevious=list.hasPrevious;this.hasNext=list.hasNext;this.getPrevious=list.getPrevious;this.getNext=list.getNext;this.getIndex=list.getIndex;this.setIndex=list.setIndex;this.isEoI=list.isEoI;this.size=(function(){return list.length});return this});return this.compile(obj)}})})(isKindOfList,GLOBAL.Array.make,NAMESPACE),"PropertyIterator":(function(keys,ns){return(function(obj){var list,IteratorMixin=ns.Iterator.EntryIteratorMixin,getPrevious,getNext,getIndex,isEoI;this.compile=(function(obj){list=IteratorMixin.call(keys(obj)),getPrevious=list.getPrevious;getNext=list.getNext;getIndex=list.getIndex;isEoI=list.isEoI;this.hasPrevious=list.hasPrevious;this.hasNext=list.hasNext;this.getPrevious=(function(){var key=getPrevious();return(!isEoI(key)?obj[key]:key)});this.getNext=(function(){var key=getNext();return(!isEoI(key)?obj[key]:key)});this.getKey=(function(){var idx=getIndex();return(!isEoI(idx)?list[idx]:idx)});this.isEoI=isEoI;this.size=(function(){return list.length});return this});return this.compile(obj)})})(GLOBAL.Object.keys,NAMESPACE),"mixin":(function(IteratorType,obj){if(obj&&((typeof obj=="object")||(typeof obj=="function"))){var Iterator=NAMESPACE.Iterator;if(isString(IteratorType)&&(typeof Iterator[IteratorType+"Mixin"]=="function")){Iterator[IteratorType+"Mixin"].call(obj)}else if(typeof IteratorType=="function"){IteratorType.call(obj)}}return obj}),"create":(function(IteratorType,obj){var iter,Iterator=NAMESPACE.Iterator;if(obj&&((typeof obj=="object")||(typeof obj=="function"))){if(isString(IteratorType)&&(typeof Iterator[IteratorType]=="function")){iter=(new Iterator[IteratorType](obj))}else if(typeof IteratorType=="function"){iter=(new IteratorType(obj))}}return iter})}})((ns||sh),sh);sh=ns=null;delete sh;delete ns;delete arguments.callee}).call(null);
+
+- packed / shrinked           - 3.620 byte :
+(function(j){var k=this;if(!k.Object||(typeof k.Object.keys!="function")){throw(new ReferenceError("Some [[Iterator]] implementations require the presence of the [[Object]] extensions module [Object.keys]."));}if(!k.Array||(typeof k.Array.make!="function")){throw(new ReferenceError("Some [[Iterator]] implementations require the presence of the [[Array]] extensions module base [Array.make.detect]."));}(j||k).Iterator=(function(g,h){var i=(function(b,c){return(function(a){return b.test(c.call(a))})})((/^\[object\s+String\]$/),h.Object.prototype.toString),isKindOfList=(function(a){return(a&&(typeof a.length=="number")&&isFinite(a.length))}),hasItemMethod=(function(a){return(a&&a.item&&((typeof a.item=="function")||(typeof a.item=="object")))}),createGetListItemFallbackByCurrentType=(function(d){return((i(d)&&(function(a,b){return a.charAt(b)}))||(hasItemMethod(d)&&(function(a,b){return a.item(b)}))||(function(a,b,c){return c}))}),EndOfIteration=(function(){var a={};a.constructor.toString=(function(){return"[object EoI]"});a.toString=(function(){return"EoI"});a.valueOf=(function(){return null});return a})(),isEndOfIteration=(function(b){return(function(a){return(a===b)})})(EndOfIteration);return{"EntryIteratorMixin":(function(c,d,e,f){return(function(){if(c(this)){var b=-1,list=this,getListItem=d(list);this.hasPrevious=(function(){return(b>0)});this.hasNext=(function(){return(b<(list.length-1))});this.getPrevious=(function(){var a;if(b>0){a=list[--b];a=(((typeof a!="undefined")||!(b in list))?a:getListItem(list,b))}else{b=-1;a=e}return a});this.getNext=(function(){var a;if(b<(list.length-1)){a=list[++b];a=(((typeof a!="undefined")||!(b in list))?a:getListItem(list,b))}else{b=list.length;a=e}return a});this.getIndex=(function(){return(((b<list.length)&&(b>-1))?b:e)});this.setIndex=(function(a){a=(~~(1*a));b=(((a<=-1)&&-1)||((a>=list.length)&&list.length)||a)});this.isEoI=f}return this})})(isKindOfList,createGetListItemFallbackByCurrentType,EndOfIteration,isEndOfIteration),"EntryIterator":(function(d,e,f){return(function(b){if(d(b)){var c,IteratorMixin=f.Iterator.EntryIteratorMixin;this.compile=(function(a){c=IteratorMixin.call(e(a));this.hasPrevious=c.hasPrevious;this.hasNext=c.hasNext;this.getPrevious=c.getPrevious;this.getNext=c.getNext;this.getIndex=c.getIndex;this.setIndex=c.setIndex;this.isEoI=c.isEoI;this.size=(function(){return c.length});return this});return this.compile(b)}})})(isKindOfList,h.Array.make,g),"PropertyIterator":(function(e,f){return(function(c){var d,IteratorMixin=f.Iterator.EntryIteratorMixin,getPrevious,getNext,getIndex,isEoI;this.compile=(function(b){d=IteratorMixin.call(e(b)),getPrevious=d.getPrevious;getNext=d.getNext;getIndex=d.getIndex;isEoI=d.isEoI;this.hasPrevious=d.hasPrevious;this.hasNext=d.hasNext;this.getPrevious=(function(){var a=getPrevious();return(!isEoI(a)?b[a]:a)});this.getNext=(function(){var a=getNext();return(!isEoI(a)?b[a]:a)});this.getKey=(function(){var a=getIndex();return(!isEoI(a)?d[a]:a)});this.isEoI=isEoI;this.size=(function(){return d.length});return this});return this.compile(c)})})(h.Object.keys,g),"mixin":(function(a,b){if(b&&((typeof b=="object")||(typeof b=="function"))){var c=g.Iterator;if(i(a)&&(typeof c[a+"Mixin"]=="function")){c[a+"Mixin"].call(b)}else if(typeof a=="function"){a.call(b)}}return b}),"create":(function(a,b){var c,Iterator=g.Iterator;if(b&&((typeof b=="object")||(typeof b=="function"))){if(i(a)&&(typeof Iterator[a]=="function")){c=(new Iterator[a](b))}else if(typeof a=="function"){c=(new a(b))}}return c})}})((j||k),k);k=j=null;delete k;delete j;delete arguments.callee}).call(null);
+
+- packed / shrinked / encoded - 2.601 byte :
+eval(function(p,a,c,k,e,r){e=function(c){return(c<a?'':e(parseInt(c/a)))+((c=c%a)>35?String.fromCharCode(c+29):c.toString(36))};if(!''.replace(/^/,String)){while(c--)r[e(c)]=k[c]||e(c);k=[function(e){return r[e]}];e=function(){return'\\w+'};c=1};while(c--)if(k[c])p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c]);return p}('(2(j){7 k=4;8(!k.q||(5 k.q.G!="2")){P(z N("O [[m]] S U A W X A [[q]] Y 10 [q.G]."));}8(!k.t||(5 k.t.E!="2")){P(z N("O [[m]] S U A W X A [[t]] Y 10 1c [t.E.1e]."));}(j||k).m=(2(g,h){7 i=(2(b,c){3(2(a){3 b.1f(c.r(a))})})((/^\\[w\\s+17\\]$/),h.q.1h.H),I=(2(a){3(a&&(5 a.l=="1i")&&15(a.l))}),Z=(2(a){3(a&&a.y&&((5 a.y=="2")||(5 a.y=="w")))}),11=(2(d){3((i(d)&&(2(a,b){3 a.1j(b)}))||(Z(d)&&(2(a,b){3 a.y(b)}))||(2(a,b,c){3 c}))}),L=(2(){7 a={};a.14.H=(2(){3"[w V]"});a.H=(2(){3"V"});a.1k=(2(){3 D});3 a})(),T=(2(b){3(2(a){3(a===b)})})(L);3{"M":(2(c,d,e,f){3(2(){8(c(4)){7 b=-1,6=4,K=d(6);4.u=(2(){3(b>0)});4.v=(2(){3(b<(6.l-1))});4.o=(2(){7 a;8(b>0){a=6[--b];a=(((5 a!="13")||!(b R 6))?a:K(6,b))}x{b=-1;a=e}3 a});4.n=(2(){7 a;8(b<(6.l-1)){a=6[++b];a=(((5 a!="13")||!(b R 6))?a:K(6,b))}x{b=6.l;a=e}3 a});4.p=(2(){3(((b<6.l)&&(b>-1))?b:e)});4.J=(2(a){a=(~~(1*a));b=(((a<=-1)&&-1)||((a>=6.l)&&6.l)||a)});4.9=f}3 4})})(I,11,L,T),"16":(2(d,e,f){3(2(b){8(d(b)){7 c,C=f.m.M;4.B=(2(a){c=C.r(e(a));4.u=c.u;4.v=c.v;4.o=c.o;4.n=c.n;4.p=c.p;4.J=c.J;4.9=c.9;4.12=(2(){3 c.l});3 4});3 4.B(b)}})})(I,h.t.E,g),"18":(2(e,f){3(2(c){7 d,C=f.m.M,o,n,p,9;4.B=(2(b){d=C.r(e(b)),o=d.o;n=d.n;p=d.p;9=d.9;4.u=d.u;4.v=d.v;4.o=(2(){7 a=o();3(!9(a)?b[a]:a)});4.n=(2(){7 a=n();3(!9(a)?b[a]:a)});4.1g=(2(){7 a=p();3(!9(a)?d[a]:a)});4.9=9;4.12=(2(){3 d.l});3 4});3 4.B(c)})})(h.q.G,g),"19":(2(a,b){8(b&&((5 b=="w")||(5 b=="2"))){7 c=g.m;8(i(a)&&(5 c[a+"Q"]=="2")){c[a+"Q"].r(b)}x 8(5 a=="2"){a.r(b)}}3 b}),"1a":(2(a,b){7 c,m=g.m;8(b&&((5 b=="w")||(5 b=="2"))){8(i(a)&&(5 m[a]=="2")){c=(z m[a](b))}x 8(5 a=="2"){c=(z a(b))}}3 c})}})((j||k),k);k=j=D;F k;F j;F 1b.1d}).r(D);',62,83,'||function|return|this|typeof|list|var|if|isEoI||||||||||||length|Iterator|getNext|getPrevious|getIndex|Object|call||Array|hasPrevious|hasNext|object|else|item|new|the|compile|IteratorMixin|null|make|delete|keys|toString|isKindOfList|setIndex|getListItem|EndOfIteration|EntryIteratorMixin|ReferenceError|Some|throw|Mixin|in|implementations|isEndOfIteration|require|EoI|presence|of|extensions|hasItemMethod|module|createGetListItemFallbackByCurrentType|size|undefined|constructor|isFinite|EntryIterator|String|PropertyIterator|mixin|create|arguments|base|callee|detect|test|getKey|prototype|number|charAt|valueOf'.split('|'),0,{}));
+
+
+*/ /*
+
+
+  [closure-compiler(Simple) + edwards-packer(encoded)]
+
+
+- combined                    - 2.286 byte :
+eval(function(p,a,c,k,e,r){e=function(c){return(c<a?'':e(parseInt(c/a)))+((c=c%a)>35?String.fromCharCode(c+29):c.toString(36))};if(!''.replace(/^/,String)){while(c--)r[e(c)]=k[c]||e(c);k=[function(e){return r[e]}];e=function(){return'\\w+'};c=1};while(c--)if(k[c])p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c]);return p}('(2(l){6 i=4;7(!i.t||5 i.t.L!="2")Z D Y("X [[9]] S V C U T C [[t]] R Q [t.L].");7(!i.A||5 i.A.J!="2")Z D Y("X [[9]] S V C U T C [[A]] R Q 19 [A.J.1a].");(l||i).9=2(m,n){6 o=2(a,c){3 2(e){3 a.18(c.u(e))}}(/^\\[y\\s+13\\]$/,n.t.17.I),q=2(a){3 a&&5 a.8=="1b"&&1c(a.8)},r=2(){6 a={};a.1h.I=2(){3"[y P]"};a.I=2(){3"P"};a.15=2(){3 O};3 a}(),s=2(a){3 2(c){3 c===a}}(r);3{K:2(a,c,e,f){3 2(){7(a(4)){6 b=-1,g=4,j=c(g);4.w=2(){3 b>0};4.x=2(){3 b<g.8-1};4.v=2(){6 d;7(b>0){d=g[--b];d=5 d!="11"||!(b 12 g)?d:j(g,b)}F{b=-1;d=e}3 d};4.z=2(){6 d;7(b<g.8-1){d=g[++b];d=5 d!="11"||!(b 12 g)?d:j(g,b)}F{b=g.8;d=e}3 d};4.E=2(){3 b<g.8&&b>-1?b:e};4.N=2(d){d=~~(1*d);b=d<=-1&&-1||d>=g.8&&g.8||d};4.B=f}3 4}}(q,2(a){3 o(a)&&2(c,e){3 c.14(e)}||a&&a.H&&(5 a.H=="2"||5 a.H=="y")&&2(c,e){3 c.H(e)}||2(c,e,f){3 f}},r,s),16:2(a,c,e){3 2(f){7(a(f)){6 b,g=e.9.K;4.G=2(j){b=g.u(c(j));4.w=b.w;4.x=b.x;4.v=b.v;4.z=b.z;4.E=b.E;4.N=b.N;4.B=b.B;4.W=2(){3 b.8};3 4};3 4.G(f)}}}(q,n.A.J,m),1f:2(a,c){3 2(e){6 f,b=c.9.K,g,j,d,k;4.G=2(p){f=b.u(a(p));g=f.v;j=f.z;d=f.E;k=f.B;4.w=f.w;4.x=f.x;4.v=2(){6 h=g();3!k(h)?p[h]:h};4.z=2(){6 h=j();3!k(h)?p[h]:h};4.1d=2(){6 h=d();3!k(h)?f[h]:h};4.B=k;4.W=2(){3 f.8};3 4};3 4.G(e)}}(n.t.L,m),1e:2(a,c){7(c&&(5 c=="y"||5 c=="2")){6 e=m.9;7(o(a)&&5 e[a+"10"]=="2")e[a+"10"].u(c);F 5 a=="2"&&a.u(c)}3 c},1g:2(a,c){6 e,f=m.9;7(c&&(5 c=="y"||5 c=="2"))7(o(a)&&5 f[a]=="2")e=D f[a](c);F 7(5 a=="2")e=D a(c);3 e}}}(l||i,i);i=l=O;M i;M l;M 1i.1j}).u(O);',62,82,'||function|return|this|typeof|var|if|length|Iterator||||||||||||||||||||Object|call|getPrevious|hasPrevious|hasNext|object|getNext|Array|isEoI|the|new|getIndex|else|compile|item|toString|make|EntryIteratorMixin|keys|delete|setIndex|null|EoI|module|extensions|implementations|of|presence|require|size|Some|ReferenceError|throw|Mixin|undefined|in|String|charAt|valueOf|EntryIterator|prototype|test|base|detect|number|isFinite|getKey|mixin|PropertyIterator|create|constructor|arguments|callee'.split('|'),0,{}));
 
 
 */ /*
@@ -269,8 +296,8 @@
 
   for quick testing paste all code into [http://jconsole.com]:
 
-
 */
+
 var iter = Iterator.mixin("EntryIterator", document.getElementsByTagName("*"));
 //var list = Iterator.mixin("EntryIterator", document.getElementsByTagName("*"));
 //var iter = Iterator.create("EntryIterator", document.getElementsByTagName("*"));
