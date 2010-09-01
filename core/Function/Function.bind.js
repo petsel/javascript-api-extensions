@@ -1,4 +1,4 @@
-﻿/*
+/*
   Ecma/TC39/2009/025 - Final Draft ECMA-262 5th Edition / April 2009 - ECMAScript Language Specification
 
 
@@ -33,25 +33,24 @@
 
 */ /*
 
-  last revision of code beneath at   : 17th of February 2010
+  last revision of code beneath at   : have a look into the github log
+  first revision of code beneath at  : 17th of February 2010
   first implementation of beneath at : 30th of May 2007
 
 */
 
 
 (function () {
+  var sh/*scripting_host|global_object*/ = this, Func = sh.Function, FuncProto = Func.prototype, slice = sh.Array.prototype.slice,
 
-
-  var sh/*global*/ = ((this && (this.window === this) && /*this.*/window) || this), // "scripting host" or "global object"
 
   isFunction = (((typeof sh.isFunction == "function") && sh.isFunction) || (function (obj/*:[object|value]*/) {
     return ((typeof obj == "function") && (typeof obj.call == "function") && (typeof obj.apply == "function"));
-  }));
+  })),
+  isCallable = ((isFunction(sh.isCallable) && sh.isCallable) || isFunction/* sufficient enough fallback */);
 
 
-  sh.Function.prototype.bind = (function () {
-
-    var slice = sh.Array.prototype.slice, isCallable = ((isFunction(sh.isCallable) && sh.isCallable) || isFunction/* sufficient enough fallback */);
+  FuncProto.bind = (function (slice, isCallable) {
     return (function (/*obj, param0, param1, ...*/)/*:[Function[closure]]*/ {
 
       if (isCallable(this)) {
@@ -64,16 +63,15 @@
         throw (new TypeError("The object delegated via apply/call onto [[Function]]'s prototypal [bind] is not callable."));
       }
     });
-  })();
+  })(slice, isCallable);
+
 
   // this [bindAsEventListener] implementation ... [bindToEventHandler] was the more precise term ... is aware of DOM events in addition to all already passed arguments.
-  sh.Function.prototype.bindAsEventListener = (function () {
-
-    var slice = sh.Array.prototype.slice, isCallable = ((isFunction(sh.isCallable) && sh.isCallable) || isFunction/* sufficient enough fallback */);
+  FuncProto.bindAsEventListener = (function (slice, isCallable, global) {
     return (function (/*obj, param0, param1, ...*/)/*:[Function[closure aware of DOM events]]*/ {
 
       if (isCallable(this)) {
-        var arr = slice.call(arguments), obj = arr.shift(), fct = this, global = sh;
+        var arr = slice.call(arguments), obj = arr.shift(), fct = this;
 
         return (function (evt) {
           fct.apply(obj, [evt || global.event].concat(arr)); // [fct]'s arguments are "(evt, param01, param02, ...)" and [fct] itself will be executed within [obj]'s context.
@@ -82,16 +80,15 @@
         throw (new TypeError("The object delegated via apply/call onto [[Function]]'s prototypal [bindAsEventListener] is not callable."));
       }
     });
-  })();/*
+  })(slice, isCallable, sh);/*
+
 
   // this [bindAsEventListener] implementation ... [bindToEventHandler] was the more precise term ... is aware of DOM events only - any additionally passed arguments will not be recognized.
-  sh.Function.prototype.bindAsEventListener = (function () {
-
-    var isCallable = ((isFunction(sh.isCallable) && sh.isCallable) || isFunction/ * sufficient enough fallback * /);
+  FuncProto.bindAsEventListener = (function (isCallable, global) {
     return (function (obj)/ *:[Function[closure aware of DOM events]]* / {
 
       if (isCallable(this)) {
-        var fct = this, global = sh;
+        var fct = this;
 
         return (function (evt) {
           fct.call(obj, (evt || global.event)); // [fct]'s only argument is "(evt)" ... [fct] itself will be executed within [obj]'s context.
@@ -100,33 +97,28 @@
         throw (new TypeError("The object delegated via apply/call onto [[Function]]'s [bindAsEventListener] prototype is not callable."));
       }
     });
-  })();
+  })(isCallable, sh);
 */
-})();/*
+
+  isCallable = isFunction = slice = FuncProto = Func = sh = null;
+  delete isCallable; delete isFunction; delete slice; delete FuncProto; delete Func; delete sh;
+
+
+  delete arguments.callee;
+}).call(null/*does force the internal [this] context pointing to the [global] object*/);
+
+
+/*
 
 
   [http://closure-compiler.appspot.com/home]
 
-- Whitespace only - 1.083 byte :
-//(function(){var sh=this&&this.window===this&&window||this,isFunction=typeof sh.isFunction=="function"&&sh.isFunction||function(obj){return typeof obj=="function"&&typeof obj.call=="function"&&typeof obj.apply=="function"};sh.Function.prototype.bind=function(){var slice=sh.Array.prototype.slice,isCallable=isFunction(sh.isCallable)&&sh.isCallable||isFunction;return function(){if(isCallable(this)){var arr=slice.call(arguments),obj=arr.shift(),fct=this;return function(){fct.apply(obj,arr)}}else throw new TypeError("The object delegated via apply/call onto [[Function]]'s prototypal [bind] is not callable.");}}();sh.Function.prototype.bindAsEventListener=function(){var slice=sh.Array.prototype.slice,isCallable=isFunction(sh.isCallable)&&sh.isCallable||isFunction;return function(){if(isCallable(this)){var arr=slice.call(arguments),obj=arr.shift(),fct=this,global=sh;return function(evt){fct.apply(obj,[evt||global.event].concat(arr))}}else throw new TypeError("The object delegated via apply/call onto [[Function]]'s prototypal [bindAsEventListener] is not callable.");}}()})();
 
-- Simple          -   920 byte :
-//(function(){var a=this&&this.window===this&&window||this,d=typeof a.isFunction=="function"&&a.isFunction||function(b){return typeof b=="function"&&typeof b.call=="function"&&typeof b.apply=="function"};a.Function.prototype.bind=function(){var b=a.Array.prototype.slice,e=d(a.isCallable)&&a.isCallable||d;return function(){if(e(this)){var c=b.call(arguments),f=c.shift(),g=this;return function(){g.apply(f,c)}}else throw new TypeError("The object delegated via apply/call onto [[Function]]'s prototypal [bind] is not callable.");}}();a.Function.prototype.bindAsEventListener=function(){var b=a.Array.prototype.slice,e=d(a.isCallable)&&a.isCallable||d;return function(){if(e(this)){var c=b.call(arguments),f=c.shift(),g=this;return function(h){g.apply(f,[h||a.event].concat(c))}}else throw new TypeError("The object delegated via apply/call onto [[Function]]'s prototypal [bindAsEventListener] is not callable.");}}()})();
+- Whitespace only - 1.200 byte :
+(function(){var sh=this,Func=sh.Function,FuncProto=Func.prototype,slice=sh.Array.prototype.slice,isFunction=typeof sh.isFunction=="function"&&sh.isFunction||function(obj){return typeof obj=="function"&&typeof obj.call=="function"&&typeof obj.apply=="function"},isCallable=isFunction(sh.isCallable)&&sh.isCallable||isFunction;FuncProto.bind=function(slice,isCallable){return function(){if(isCallable(this)){var arr=slice.call(arguments),obj=arr.shift(),fct=this;return function(){fct.apply(obj,arr)}}else throw new TypeError("The object delegated via apply/call onto [[Function]]'s prototypal [bind] is not callable.");}}(slice,isCallable);FuncProto.bindAsEventListener=function(slice,isCallable,global){return function(){if(isCallable(this)){var arr=slice.call(arguments),obj=arr.shift(),fct=this;return function(evt){fct.apply(obj,[evt||global.event].concat(arr))}}else throw new TypeError("The object delegated via apply/call onto [[Function]]'s prototypal [bindAsEventListener] is not callable.");}}(slice,isCallable,sh);isCallable=isFunction=slice=FuncProto=Func=sh=null;delete isCallable;delete isFunction;delete slice;delete FuncProto;delete Func;delete sh;delete arguments.callee}).call(null);
 
-
-*/ /*
-
-
-  [http://dean.edwards.name/packer/]
-
-- packed                      - ?.??? byte :
-//
-
-- packed / shrinked           - ?.??? byte :
-//
-
-- packed / shrinked / encoded - ?.??? byte :
-//
+- Simple          -   926 byte :
+(function(){var a=this,i=a.Function,c=i.prototype,d=a.Array.prototype.slice,e=typeof a.isFunction=="function"&&a.isFunction||function(b){return typeof b=="function"&&typeof b.call=="function"&&typeof b.apply=="function"},f=e(a.isCallable)&&a.isCallable||e;c.bind=function(b,j){return function(){if(j(this)){var g=b.call(arguments),h=g.shift(),k=this;return function(){k.apply(h,g)}}else throw new TypeError("The object delegated via apply/call onto [[Function]]'s prototypal [bind] is not callable.");}}(d,f);c.bindAsEventListener=function(b,j,g){return function(){if(j(this)){var h=b.call(arguments),k=h.shift(),l=this;return function(m){l.apply(k,[m||g.event].concat(h))}}else throw new TypeError("The object delegated via apply/call onto [[Function]]'s prototypal [bindAsEventListener] is not callable.");}}(d,f,a);f=e=d=c=i=a=null;delete f;delete e;delete d;delete c;delete i;delete a;delete arguments.callee}).call(null);
 
 
 */ /*
@@ -154,5 +146,4 @@ obj.onClickHandler({"target": "foo", "event": "bar"}, "hallo", "world");
 document.about = "me is the [document] object";
 document.onclick = obj.onClickHandler;
 
-//document.onclick = obj.onClickHandler.bindAsEventListener(obj, "hallo", "world");
-
+document.onclick = obj.onClickHandler.bindAsEventListener(obj, "hallo", "world");
