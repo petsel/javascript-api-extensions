@@ -42,16 +42,22 @@ eval(function(p,a,c,k,e,r){e=function(c){return(c<a?'':e(parseInt(c/a)))+((c=c%a
   ArrProto.forEach = (function (is, make, THROW_LIST_DELEGATION_TYPE_ERROR, THROW_FIRST_ARGUMENT_FUNCTION_TYPE_ERROR) {
     return (function (fct, target) {
 
-      var arr = ((is(this) && this) || make(this) || THROW_LIST_DELEGATION_TYPE_ERROR());
-    //var arr = ((is(this) && this) || make(this) || []); // fail silently
+      var arr = ((is(this) && this) || make(this) || THROW_LIST_DELEGATION_TYPE_ERROR()), len = arr.length, i = -1;
+    //var arr = ((is(this) && this) || make(this) || []), len = arr.length, i = -1; // fail silently
       if (typeof fct == "function") {
-
+/*
         target = (target || (((typeof target == "undefined") || (typeof target == "object")) ? null : target));
-        var elm, i = -1, len = arr.length;
         while (++i < len) {
-          elm = arr[i];
-          if ((typeof elm != "undefined") || (i in arr)) { // countercheck on this issue with [https://bugzilla.mozilla.org/show_bug.cgi?id=475925] and [http://code.google.com/p/v8/issues/detail?id=218]
-            fct.call(target, elm, i, arr);
+          ((i in arr) && fct.call(target, arr[i], i, arr)); // (i in arr) : countercheck on this issue with [https://bugzilla.mozilla.org/show_bug.cgi?id=475925] and [http://code.google.com/p/v8/issues/detail?id=218]
+        }
+*/
+        if ((typeof target == "undefined") || (!target && (typeof target == "object"))) {
+          while (++i < len) {
+            ((i in arr) && fct(arr[i], i, arr)); // (i in arr) : countercheck on this issue with [https://bugzilla.mozilla.org/show_bug.cgi?id=475925] and [http://code.google.com/p/v8/issues/detail?id=218]
+          }
+        } else {
+          while (++i < len) {
+            ((i in arr) && fct.call(target, arr[i], i, arr)); // (i in arr) : countercheck on this issue with [https://bugzilla.mozilla.org/show_bug.cgi?id=475925] and [http://code.google.com/p/v8/issues/detail?id=218]
           }
         }
       } else {
@@ -59,21 +65,40 @@ eval(function(p,a,c,k,e,r){e=function(c){return(c<a?'':e(parseInt(c/a)))+((c=c%a
       }
     });
   })(isArray, makeArray, throwListDelegationTypeError, throwFirstArgumentFunctionTypeError);
+/*
+  ArrProto.forEach = (function (is, make) {
+    return (function (fct, target) {
+
+      var arr = ((is(this) && this) || make(this) || []/ *fail silently* /), len = arr.length, i = -1;
+      if (len && (typeof fct == "function")) {
+        if ((typeof target == "undefined") || (!target && (typeof target == "object"))) {
+          while (++i < len) {
+            ((i in arr) && fct(arr[i], i, arr)); // (i in arr) : countercheck on this issue with [https://bugzilla.mozilla.org/show_bug.cgi?id=475925] and [http://code.google.com/p/v8/issues/detail?id=218]
+          }
+        } else {
+          while (++i < len) {
+            ((i in arr) && fct.call(target, arr[i], i, arr)); // (i in arr) : countercheck on this issue with [https://bugzilla.mozilla.org/show_bug.cgi?id=475925] and [http://code.google.com/p/v8/issues/detail?id=218]
+          }
+        }
+      }
+    });
+  })(isArray, makeArray);
+*/
 
 
   Arr.forEach = (function (is, make, THROW_LIST_TYPE_ERROR, THROW_SECOND_ARGUMENT_FUNCTION_TYPE_ERROR) {
     return (function (list, fct, target) {
 
-      var arr = ((is(list) && list) || make(list) || THROW_LIST_TYPE_ERROR());
-    //var arr = ((is(list) && list) || make(list) || []); // fail silently
+      var arr = ((is(list) && list) || make(list) || THROW_LIST_TYPE_ERROR()), len = arr.length, i = -1;
+    //var arr = ((is(list) && list) || make(list) || []), len = arr.length, i = -1; // fail silently
       if (typeof fct == "function") {
-
-        target = (target || (((typeof target == "undefined") || (typeof target == "object")) ? null : target));
-        var elm, i = -1, len = arr.length;
-        while (++i < len) {
-          elm = arr[i];
-          if ((typeof elm != "undefined") || (i in arr)) { // countercheck on this issue with [https://bugzilla.mozilla.org/show_bug.cgi?id=475925] and [http://code.google.com/p/v8/issues/detail?id=218]
-            fct.call(target, elm, i, arr);
+        if ((typeof target == "undefined") || (!target && (typeof target == "object"))) {
+          while (++i < len) {
+            ((i in arr) && fct(arr[i], i, arr));
+          }
+        } else {
+          while (++i < len) {
+            ((i in arr) && fct.call(target, arr[i], i, arr));
           }
         }
       } else {
@@ -81,6 +106,25 @@ eval(function(p,a,c,k,e,r){e=function(c){return(c<a?'':e(parseInt(c/a)))+((c=c%a
       }
     });
   })(isArray, makeArray, throwListTypeError, throwSecondArgumentFunctionTypeError);
+/*
+  Arr.forEach = (function (is, make) {
+    return (function (list, fct, target) {
+
+      var arr = ((is(list) && list) || make(list) || []/ *fail silently* /), len = arr.length, i = -1;
+      if (len && (typeof fct == "function")) {
+        if ((typeof target == "undefined") || (!target && (typeof target == "object"))) {
+          while (++i < len) {
+            ((i in arr) && fct(arr[i], i, arr));
+          }
+        } else {
+          while (++i < len) {
+            ((i in arr) && fct.call(target, arr[i], i, arr));
+          }
+        }
+      }
+    });
+  })(isArray, makeArray);
+*/
 
 
 
