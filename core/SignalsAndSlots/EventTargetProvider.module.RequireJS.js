@@ -2,19 +2,34 @@
  *  [EventTargetProvider] is a singleton/module that features two methods
  *
  *  @method [register]:
- *    - any object that does not already feature an [EventTarget] Interface/Behavior can be passed to it.
- *    - thus such an object gets applied [EventTargetMixin] that is an implemented [EventTarget] Interface for customized event dispatching.
+ *    - any object that does not already feature an [EventTarget]
+ *      Interface/Behavior can be passed to it.
+ *    - thus such an object gets applied [EventTargetMixin] that is
+ *      an implemented [EventTarget] Interface for customized event
+ *      dispatching.
  *
  *  @method [unsubscribe]:
- *    - any object that features the above described [EventTarget] Interface/Behavior can discard this very behavior.
+ *    - any object that features the above described [EventTarget]
+ *      Interface/Behavior can discard this very behavior.
  *
  *
- *  [EventTargetMixin] is an implemented [EventTarget] Interface for customized event dispatching.
+ *  [EventTargetMixin] is an implemented [EventTarget] Interface for
+ *  customized event dispatching.
  *
- *  @method [on] / [addEventListener]: registers a method/event handler associated with a string labeled (custom) event. returns a reference to the created [EventListener] that now is associated with this object.
- *  @method [removeEventListener]: removes [EventListener]s that are associated with this object by [EventListener] references or by valid combined signatures of an event handler and a string labeled (custom) event.
- *  @method [hasEventListener]: tells whether or not [EventTarget] does already listen to a certain event.
- *  @method [dispatchEvent]: every object that features [EventTarget] behavior can trigger/dispatch (custom) events.
+ *  @method [on] / [addEventListener]:
+ *    - registers a method/event handler associated with a string labeled
+ *      (custom) event. returns a reference to the created [EventListener]
+ *      that now is associated with this object.
+ *  @method [removeEventListener]:
+ *    - removes [EventListener]s that are associated with this object by
+ *      [EventListener] references or by valid combined signatures of an
+ *      event handler and a string labeled (custom) event.
+ *  @method [hasEventListener]:
+ *    - tells whether or not [EventTarget] does already listen
+ *      to a certain event.
+ *  @method [dispatchEvent]:
+ *    - every object that features [EventTarget] behavior can
+ *      trigger/dispatch (custom) events.
  *
  */
 
@@ -62,7 +77,7 @@ define(function () {
 
   finally return the reference of [EventTargetProvider]
   that was bound to the local variable [ETP] back into
-  RequireJS's functional execution scope.
+  RequireJS's functional execution context.
 */
   return ETP.EventTargetProvider;
 });
