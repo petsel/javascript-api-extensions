@@ -15,36 +15,36 @@
  *  exactly this pattern characters but rather shall be an integral part of those above mentioned searches.
  *
 */
-    global.RegExp.toSearch = (function (STRING) {/*
+  global.RegExp.toSearch = (function (STRING) {/*
 
-      - formerly implemented as:
-        STRING.prototype.toRegExpString = function () {return this.replace(/([\^\$\.\*\+\?\=\!\:\|\\\/\(\)\[\]\{\}])/g,"\\$1");};
-    */
-      var regXPatternChars = (/([$^*+?!:=.|(){}[\]\\])/g),
-      regXWSSequences = (/\s+/g),
-      wsReplacement = "\\s+",
-      masquerade = (function () {return ("\\" + arguments[1]);});
+    - formerly implemented as:
+      STRING.prototype.toRegExpString = function () {return this.replace(/([\^\$\.\*\+\?\=\!\:\|\\\/\(\)\[\]\{\}])/g,"\\$1");};
+  */
+    var regXPatternChars = (/([$^*+?!:=.|(){}[\]\\])/g),
+    regXWSSequences = (/\s+/g),
+    wsReplacement = "\\s+",
+    masquerade = (function () {return ("\\" + arguments[1]);});
 
-      return (function (str) {
+    return (function (str) {
 
-        return STRING(str).replace(regXPatternChars, masquerade).replace(regXWSSequences, wsReplacement);
-      });
-    })(global.String);
+      return STRING(str).replace(regXPatternChars, masquerade).replace(regXWSSequences, wsReplacement);
+    });
+  })(global.String);
 
 
 /*
  * fix some browsers (e.g. webkit) broken prototypal [RegExp.compile] method.
 */
-    (function (REG_EXP, regX) {
-      if ((regX.compile("(?:)", "") + "") !== (regX + "")) {
+  (function (REG_EXP, regX) {
+    if ((regX.compile("(?:)", "") + "") !== (regX + "")) {
 
-        REG_EXP.prototype.compile = (function (/*search, flags*/) {
+      REG_EXP.prototype.compile = (function (/*search, flags*/) {
 
-          return REG_EXP.apply(this, arguments);
-        });
-      }
-      regX = null; delete regX;
-    })(global.RegExp, (/(?:)/));
+        return REG_EXP.apply(this, arguments);
+      });
+    }
+    regX = null; delete regX;
+  })(global.RegExp, (/(?:)/));
 
 
 }).call(null);
