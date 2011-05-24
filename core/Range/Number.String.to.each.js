@@ -1,16 +1,3 @@
-/*
-  This new [Number] iteration with [Number.to( ... ).each] was as much inspired by
-  Smalltalk as it had been before with the recently implemented [Number.times] iterator.
-
-  links:
-
-    EN: [http://en.wikipedia.org/wiki/Smalltalk]
-    DE: [http://de.wikipedia.org/wiki/Smalltalk-80_(Programmiersprache)#Schleifen]
-
-  for a quick countercheck paste code into [http://jconsole.com/]:
-*/
-
-
 (function () {
   var
     global = this,
@@ -51,7 +38,7 @@
     return (function (fct, target, thisRange, currentType, endType) {
 
       if ((typeof currentType.next == "function") && (typeof endType.next == "function")) { // types that are >>ready for [[Range]]<< do at least implement a [next] method ...
-        if ((value_of(currentType) === value_of(endType)) || (compare(currentType, endType) > 0)) { // ... for better comparison a [compareTo] method was nice to have too.
+        if ((value_of(currentType) === value_of(endType)) || (compare(currentType, endType) < 0)) { // ... for better comparison a [compareTo] method was nice to have too.
 
           if (typeof fct == "function") {
             target = (target || (((typeof target == "undefined") || (typeof target == "object")) ? null : target));
@@ -64,11 +51,11 @@
 
               currentType = currentType.next();
 
-            } while (currentType && (typeof currentType.next == "function") && (compare(currentType, endType) > 0))
+            } while (currentType && (typeof currentType.next == "function") && (compare(currentType, endType) < 0))
           }
         }
       }
-    })
+    });
   })(valueOf, compareTypes),
 
 
