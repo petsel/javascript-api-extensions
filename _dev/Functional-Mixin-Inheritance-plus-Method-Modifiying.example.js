@@ -51,14 +51,21 @@
     log("TestMixin :: initialize : " + this.initialize);
     dir(this);
 
-  //this.initialize = this.initialize.after(function () {
-    this.initialize = this.initialize.before(function () {
+    var initialize = (function () {
 
       log("TestMixin :: initialize");
       dir(this);
 
-    }, this); // each method modifiers second argument does - if provided - preserve an object methods context. method delegation to another context can be achieved as well.
-
+    });
+    this.initialize = this.initialize
+    //&& this.initialize.after(initialize, this)
+      && this.initialize.before(initialize, this) // each method modifiers second argument does - if provided - preserve an object methods context. method delegation to another context can be achieved as well.
+      || initialize;
+/*
+  was:
+  //this.initialize = this.initialize.after(initialize, this);
+    this.initialize = this.initialize.before(initialize, this);
+*/
     log("TestMixin :: initialize : " + this.initialize);
     dir(this);
   }),
