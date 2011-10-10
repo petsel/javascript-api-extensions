@@ -59,7 +59,6 @@
   delete ComparableTrait; delete compareTypes; delete defaultValueOf; delete global;
 
 
-  delete arguments.callee;
 }).call(null/*does force the internal [this] context pointing to the [global] object*/ /*[, optional_namespace_ComparableTrait_is_supposed_to_be_bound_to]*/);
 
 
@@ -174,12 +173,11 @@ log("y.compareTo(z, oddityValueOf) : " + y.compareTo(z, oddityValueOf)); // 0
   [http://closure-compiler.appspot.com/home]
 
 
-- Whitespace only - 901 byte
-(function(ns){var global=this;if(typeof(ns||global).ComparableTrait=="function")return;var defaultValueOf=function(proto_value_of){return function(type){return proto_value_of.call(type).valueOf()}}(global.Object.prototype.valueOf),compareTypes=function(default_value_of){return function(typeA,typeB,customValueOf){customValueOf=typeof customValueOf=="function"&&customValueOf||default_value_of;var valueA,valueB;return(valueA=customValueOf(typeA))>(valueB=customValueOf(typeB))&&1||valueA<valueB&&-1||0}}(defaultValueOf),ComparableTrait=function(compare_types){return function(){this.compareTo=function(obj,customValueOf){return compare_types(this,obj,customValueOf)}}}(compareTypes);(ns||global).ComparableTrait=ComparableTrait;ComparableTrait=compareTypes=defaultValueOf=global=null;delete ComparableTrait;delete compareTypes;delete defaultValueOf;delete global;delete arguments.callee}).call(null);
+- Whitespace only - 877 byte
+(function(ns){var global=this;if(typeof(ns||global).ComparableTrait=="function")return;var defaultValueOf=function(proto_value_of){return function(type){return proto_value_of.call(type).valueOf()}}(global.Object.prototype.valueOf),compareTypes=function(default_value_of){return function(typeA,typeB,customValueOf){customValueOf=typeof customValueOf=="function"&&customValueOf||default_value_of;var valueA,valueB;return(valueA=customValueOf(typeA))>(valueB=customValueOf(typeB))&&1||valueA<valueB&&-1||0}}(defaultValueOf),ComparableTrait=function(compare_types){return function(){this.compareTo=function(obj,customValueOf){return compare_types(this,obj,customValueOf)}}}(compareTypes);(ns||global).ComparableTrait=ComparableTrait;ComparableTrait=compareTypes=defaultValueOf=global=null;delete ComparableTrait;delete compareTypes;delete defaultValueOf;delete global}).call(null);
 
 - Simple          - 479 byte
-(function(g){var a=this;if(typeof(g||a).ComparableTrait!="function"){var d=function(a){return function(f){return a.call(f).valueOf()}}(a.Object.prototype.valueOf),b=function(a){return function(f,d,e){var e=typeof e=="function"&&e||a,b,c;return(b=e(f))>(c=e(d))&&1||b<c&&-1||0}}(d),c=function(a){return function(){this.compareTo=function(b,c){return a(this,b,c)}}}(b);(g||a).ComparableTrait=c;c=b=d=a=null;delete c;delete b;delete d;delete a;delete arguments.callee}}).call(null);
+(function(g){var a=this;if(typeof(g||a).ComparableTrait!="function"){var d=function(a){return function(f){return a.call(f).valueOf()}}(a.Object.prototype.valueOf),b=function(a){return function(f,d,e){var e=typeof e=="function"&&e||a,b,c;return(b=e(f))>(c=e(d))&&1||b<c&&-1||0}}(d),c=function(a){return function(){this.compareTo=function(b,c){return a(this,b,c)}}}(b);(g||a).ComparableTrait=c;c=b=d=a=null;delete c;delete b;delete d;delete a}}).call(null);
 
 
 */
-
