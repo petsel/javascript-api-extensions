@@ -1,10 +1,8 @@
 define(function () {
-
-
   return (function () {
 
 
-    var global = this, // [global_object]
+    var global/*global object | scripting host*/ = this,
 
 
     defaultValueOf = (function (proto_value_of) {
@@ -20,7 +18,7 @@ define(function () {
       });
     })(global.Object.prototype.valueOf),
 
-    compareTypes = (function (default_value_of) {
+    defaultCompareTypes = (function (default_value_of) {
       return (function (typeA, typeB, customValueOf) {
 
         customValueOf = (((typeof customValueOf == "function") && customValueOf) || default_value_of);
@@ -34,28 +32,57 @@ define(function () {
       });
     })(defaultValueOf),
 
+  /*
 
-    ComparableTrait = (function (compare_types) {
-      return (function () {
+    [http://apidock.com/ruby/Comparable]
 
-        this.compareTo = (function (obj/*object [this] does compare to*/, customValueOf/*during object comparison an optional custom value of method will be called for each object rigth before comparing them to one another*/) {
+  */ /*
 
-          return compare_types(this, obj, customValueOf);
+    JavaScript supports/enables [Function] based [Trait] and [Mixin] -patterns
+    for object composition. Both patterns are containers for a single or a
+    whole bunch of implemented methods that are supposed to get bound to and
+    run on objects.
+
+    In my oppinion [Trait]s in JavaScript are considered to be "stateless".
+    If it comes to state that needs to be carried throughout an object such
+    implementations should be refered to as [Mixin]s.
+
+    In order to avoid/solve conflicts [Trait] composition patterns should
+    make use of [Function.prototype.before], [Function.prototype.after]
+    and [Function.prototype.around].
+
+  */
+
+    ComparableTrait = (function (default_compare_types) {
+      return (function (customCompareTypes/* if [ComparableTrait] gets applied onto an object (most likely such as XYZ.prototype) it is suggested to pass a custom [compareTypes] method as well */) {
+
+        customCompareTypes = (((typeof customCompareTypes == "function") && customCompareTypes) || default_compare_types);
+
+        this.compareTo = (function (obj/*object [this] does compare to*/, customValueOf/*during object comparison an optional custom [valueOf] method will be called for each object rigth before comparing them to one another*/) {
+
+          return customCompareTypes(this, obj, customValueOf);
+        });
+        this.between = (function (objK, objM/*objects [this] does compare to*/, customValueOf/*during object comparison an optional custom [valueOf] method will be called for each object rigth before comparing them to one another*/) {
+
+          var isBetween = customCompareTypes(objK, objM, customValueOf); // -1 || 0 || 1;
+          if (isBetween < 0) {
+            isBetween = (customCompareTypes(this, objK, customValueOf) > 0) && (customCompareTypes(this, objM, customValueOf) < 0);
+          } else if (isBetween > 0) {
+            isBetween = (customCompareTypes(this, objM, customValueOf) > 0) && (customCompareTypes(this, objK, customValueOf) < 0);
+          }
+          return !!isBetween;
         });
       });
-    })(compareTypes);
+    })(defaultCompareTypes);
 
 
-    compareTypes = defaultValueOf = global = null;
-    delete compareTypes; delete defaultValueOf; delete global;
+    defaultCompareTypes = defaultValueOf = global = null;
+    delete defaultCompareTypes; delete defaultValueOf; delete global;
 
 
     return ComparableTrait;
 
-
   }).call(null/*does force the internal [this] context pointing to the [global] object*/);
-
-
 });
 
 
@@ -65,11 +92,11 @@ define(function () {
   [http://closure-compiler.appspot.com/home]
 
 
-- Whitespace only - 778 byte
-define(function(){return function(){var global=this,defaultValueOf=function(proto_value_of){return function(type){return proto_value_of.call(type).valueOf()}}(global.Object.prototype.valueOf),compareTypes=function(default_value_of){return function(typeA,typeB,customValueOf){customValueOf=typeof customValueOf=="function"&&customValueOf||default_value_of;var valueA,valueB;return(valueA=customValueOf(typeA))>(valueB=customValueOf(typeB))&&1||valueA<valueB&&-1||0}}(defaultValueOf),ComparableTrait=function(compare_types){return function(){this.compareTo=function(obj,customValueOf){return compare_types(this,obj,customValueOf)}}}(compareTypes);compareTypes=defaultValueOf=global=null;delete compareTypes;delete defaultValueOf;delete global;return ComparableTrait}.call(null)});
+- Whitespace only - 1.302 byte
+define(function(){return function(){var global=this,defaultValueOf=function(proto_value_of){return function(type){return proto_value_of.call(type).valueOf()}}(global.Object.prototype.valueOf),defaultCompareTypes=function(default_value_of){return function(typeA,typeB,customValueOf){customValueOf=typeof customValueOf=="function"&&customValueOf||default_value_of;var valueA,valueB;return(valueA=customValueOf(typeA))>(valueB=customValueOf(typeB))&&1||valueA<valueB&&-1||0}}(defaultValueOf),ComparableTrait=function(default_compare_types){return function(customCompareTypes){customCompareTypes=typeof customCompareTypes=="function"&&customCompareTypes||default_compare_types;this.compareTo=function(obj,customValueOf){return customCompareTypes(this,obj,customValueOf)};this.between=function(objK,objM,customValueOf){var isBetween=customCompareTypes(objK,objM,customValueOf);if(isBetween<0)isBetween=customCompareTypes(this,objK,customValueOf)>0&&customCompareTypes(this,objM,customValueOf)<0;else if(isBetween>0)isBetween=customCompareTypes(this,objM,customValueOf)>0&&customCompareTypes(this,objK,customValueOf)<0;return!!isBetween}}}(defaultCompareTypes);defaultCompareTypes=defaultValueOf=global=null;delete defaultCompareTypes;delete defaultValueOf;delete global;return ComparableTrait}.call(null)});
 
-- Simple          - 400 byte
-define(function(){return function(){var b,c=function(e){return function(f){return e.call(f).valueOf()}}(this.Object.prototype.valueOf),a=function(e){return function(f,c,d){var d=typeof d=="function"&&d||e,a,b;return(a=d(f))>(b=d(c))&&1||a<b&&-1||0}}(c),g=function(a){return function(){this.compareTo=function(b,c){return a(this,b,c)}}}(a),a=c=b=null;delete a;delete c;delete b;return g}.call(null)});
+- Simple          -   558 byte
+define(function(){return function(){var i,g=function(f){return function(a){return f.call(a).valueOf()}}(this.Object.prototype.valueOf),h=function(f){return function(a,e,b){var b=typeof b=="function"&&b||f,c,d;return(c=b(a))>(d=b(e))&&1||c<d&&-1||0}}(g),j=function(f){return function(a){a=typeof a=="function"&&a||f;this.compareTo=function(e,b){return a(this,e,b)};this.between=function(e,b,c){var d=a(e,b,c);d<0?d=a(this,e,c)>0&&a(this,b,c)<0:d>0&&(d=a(this,b,c)>0&&a(this,e,c)<0);return!!d}}}(h),h=g=i=null;delete h;delete g;delete i;return j}.call(null)});
 
 
 */
