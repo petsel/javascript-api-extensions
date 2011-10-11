@@ -45,12 +45,12 @@
 
   JavaScript supports/enables [Function] based [Trait] and [Mixin] -patterns
   for object composition. Both patterns are containers for a single or a
-  whole bunch of implemented methods that are supposed to get bound to and
-  run on objects.
+  whole bunch of implemented method(s) that is/are supposed to get bound to
+  and run on objects.
 
   In my oppinion [Trait]s in JavaScript are considered to be "stateless".
   If it comes to state that needs to be carried throughout an object such
-  implementations should be refered to as [Mixin]s.
+  implementations should be referred to as [Mixin]s.
 
   In order to avoid/solve conflicts [Trait] composition patterns should
   make use of [Function.prototype.before], [Function.prototype.after]
