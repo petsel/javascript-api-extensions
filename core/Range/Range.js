@@ -1,14 +1,25 @@
 (function (ns/*[custom_namespace]*/) {
 
 
-  var global = this; // [global_object|scripting_host]
+  var
+    global/*global object | scripting host*/ = this,
 
 
-  if (typeof (ns||global).Range == "function") {
+    ns = (ns || global),
+
+
+    isFunction = ((typeof global.isFunction == "function") && global.isFunction) || function (obj) {
+
+      return ((typeof obj == "function") && (typeof obj.call == "function") && (typeof obj.apply == "function"));
+    }
+  ;
+
+
+  if (isFunction(ns.Range)) {
 
     return;
   }
-  if ((typeof global.Number.prototype.next != "function") || (typeof global.String.prototype.next != "function")) {
+  if (!isFunction(global.Number.prototype.next) || !isFunction(global.String.prototype.next)) {
 
     // you might need to check back with: [http://github.com/petsel/javascript-api-extensions/blob/master/core/Range/Number.String.next.js]
     global.console
@@ -19,7 +30,21 @@
   }
 
 
-  var defaultValueOf = (function (proto_value_of) {
+  var isCallable = (isFunction(global.isCallable) && global.isCallable) || function (obj) {
+
+    return (typeof obj == "function");
+  },
+  makeArray = (function (ArrProto) {
+    return (isFunction(ArrProto.make) && ArrProto.make) || (function (slice) {
+      return function (list) {
+
+        return slice.call(list);
+      };
+    })(ArrProto.slice);
+  })(global.Array.prototype),
+
+
+  defaultValueOf = (function (proto_value_of) {
     return (function (type) {
 /*
   Object.prototype.valueOf.call(new String(1))              // "[object String]"
@@ -32,8 +57,9 @@
     });
   })(global.Object.prototype.valueOf),
 
-  compareTypes = (function (default_value_of) {
-    return (function (typeA, typeB, customValueOf) {
+
+  compareTypes = (function (default_value_of, UNDEFINED_VALUE) {
+    return function (typeA, typeB, customValueOf) {
 
       var comparativeValue, valueA, valueB;
       if (typeof customValueOf == "function") {
@@ -41,119 +67,127 @@
         comparativeValue = (
           (((valueA = customValueOf(typeA)) > (valueB = customValueOf(typeB))) && 1)
           || ((valueA < valueB) && -1)
-          || 0
+          || ((valueA === valueB) ? 0 : UNDEFINED_VALUE) // as for UNDEFINED_VALUE, the 4th possible return value, please countercheck with [http://apidock.com/ruby/Comparable]
         );
       } else {
         comparativeValue = (
           ((typeof typeA.compareTo == "function") && (typeof typeB.compareTo == "function"))
             ? typeA.compareTo(typeB)
-            : ((((valueA = default_value_of(typeA)) > (valueB = default_value_of(typeB))) && 1)
+            : (((valueA = default_value_of(typeA)) > (valueB = default_value_of(typeB))) && 1)
               || ((valueA < valueB) && -1)
-              || 0)
+              || ((valueA === valueB) ? 0 : UNDEFINED_VALUE)
         );
       }
       return comparativeValue;
-    });
+    };
   })(defaultValueOf),
 
 
-  eachType = (function (compare) {
-    return (function (fct, target, thisRange, currentType, endType, customValueOf) {
+  rangeToArray = (function (compare, NULL_VALUE, UNDEFINED_VALUE) {
+    return function (currentType, endType, customValueOf) {
 
+      var arr = [], comparativeValue;
       if (
-        (currentType || ((typeof currentType != "undefined") && (typeof currentType != "object")))
-        && (endType || ((typeof endType != "undefined") && (typeof endType != "object")))
+        (currentType || ((currentType !== UNDEFINED_VALUE) && (currentType !== NULL_VALUE)))
+        && (endType || ((endType !== UNDEFINED_VALUE) && (endType !== NULL_VALUE)))
         && (typeof currentType.next == "function")
         && (typeof endType.next == "function")
-      ) { /* types that are >>ready for [[Range]]<< do at least implement a [next] method ...
+      ) { /*
+             types that are >>ready for [[Range]]<< do at least implement a [next] method ...
 
              ... please check back with:
 
              - [http://apidock.com/ruby/Range] and
              - [http://apidock.com/ruby/Comparable].
       */
-        if (typeof fct == "function") {
-          target = (target || (((typeof target == "undefined") || (typeof target == "object")) ? null : target));
+        if ((typeof (comparativeValue = compare(currentType, endType, customValueOf)) != "undefined") && (comparativeValue < 0)) {
+          do {
 
-          var comparativeValue = compare(currentType, endType, customValueOf), idx = -1;
-          if (comparativeValue < 0) {
-            do {
+            arr.push(currentType);
 
-            //callback.call(target, element, index, listStructure/*[, startValue, endValue]*/);
-              fct.call(target, currentType, ++idx, thisRange);
+          } while (
+            ((currentType = currentType.next()) || ((currentType !== UNDEFINED_VALUE) && (currentType !== NULL_VALUE)))
+            && (typeof currentType.next == "function")
+            && (compare(currentType, endType, customValueOf) < 0)
+          )
+          arr.push(endType);
 
-              currentType = currentType.next();
+        } else if (comparativeValue === 0) {
 
-            } while ((currentType || (typeof currentType != "object")) && (typeof currentType.next == "function") && (compare(currentType, endType, customValueOf) < 0))
-
-            fct.call(target, endType, ++idx, thisRange);
-
-          } else if (comparativeValue === 0) {
-
-            fct.call(target, currentType, ++idx, thisRange);
-          }
+          arr.push(endType);
         }
       }
-    });
-  })(compareTypes),
+      return arr;
+    };
+  })(compareTypes, null),
 
 
-  rangeToArray = (function (thisRange) {
-    var arr = [];
+  eachType = (function (is_callable, NULL_VALUE, UNDEFINED_VALUE) {
+    return function (fct, target, thisRange) {
 
-    thisRange.each(function (elm/*, idx, range*/) {
-      arr.push(elm);
-    });
-    return arr;
-  }),
+      var len, idx = -1, arr = this;
+      if (arr && (len = arr.length) && is_callable(fct)) { // fail silently
+
+        target = ((target === UNDEFINED_VALUE) || (target === NULL_VALUE)) ? NULL_VALUE : target;
+        while (++idx < len) {
+
+          (idx in arr) && fct.call(target, arr[idx], idx, thisRange);
+        }
+      }
+    //return UNDEFINED_VALUE; // according to the spec but it does prevent chaining.
+      return arr;
+    };
+  })(isCallable, null),
 
 
-  Range = (function (range_to_array, for_each) {
-    return (function (startType, endType, customValueOf) {
+  Range = (function (for_each, make, range_to_array, Constructor) {
+    Constructor = function (startType, endType, customValueOf) {
       var arr;/*
 
         as soon as an optional 3rd [customValueOf] parameter
         is provided to the [Range] constructor all comparision
-        with objects one to another will be channelled through
+        with objects one to another will be redirected through
         this functional helper.
         thus any object that is a valid range member does not
-        necesserely need to have applied the [ComparableTrait]
+        necessarily need to have applied the [ComparableTrait]
         nor does it need to implemented a [compareTo] method.
       */
       this.each = (function (fct, target) {
 
-        for_each(fct, target, this, startType, endType, customValueOf);
+        for_each.call((arr || (arr = range_to_array(startType, endType, customValueOf))), fct, target, this);
 
         return this;
       });
       this.toArray = (function () {
 
-        return (arr || (arr = range_to_array(this)));
+        return make(arr || (arr = range_to_array(startType, endType, customValueOf)));
       });
+    };
+    Constructor.prototype.valueOf = function () {
 
-      this.valueOf = (function () {
+      return this.toArray();
+    };
+    Constructor.prototype.toString = function () {
 
-        return this.toArray();
-      });
-      this.toString = (function () {
-
-        return ("" + this.toArray());
-      });
-    });
-  })(rangeToArray, eachType);
-
-
-//return Range; // if implemented as requireJS module - and then also delete >>(ns||global).Range = Range;<< ... >>delete arguments.callee;<<
+      return ("" + this.toArray());
+    };
+    return Constructor;
+  })(eachType, makeArray, rangeToArray);
 
 
-  (ns||global).Range = Range;
+//return Range; // if implemented as requireJS module - and then also delete >>ns.Range = Range;<< ... >>delete arguments.callee;<<
 
 
-  Range = rangeToArray = eachType = compareTypes = defaultValueOf = global = null;
-  delete Range; delete rangeToArray; delete eachType; delete compareTypes; delete defaultValueOf; delete global;
+  ns.Range = Range;
 
 
-  delete arguments.callee;
+  Range = rangeToArray = eachType = compareTypes = defaultValueOf = makeArray = isCallable = isFunction = ns = global = null;
+
+  delete Range; delete rangeToArray; delete eachType; delete compareTypes; delete defaultValueOf;
+  delete makeArray; delete isCallable; delete isFunction;
+  delete ns; delete global;
+
+
 }).call(null/*does force the internal [this] context pointing to the [global] object*/ /*[, optional_namespace_Range_is_supposed_to_be_bound_to]*/);
 
 

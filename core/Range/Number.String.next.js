@@ -8,21 +8,20 @@
     NumProto = Num.prototype,
     StrProto = Str.prototype,
 
-/*
-    Range, RngProto,
-*/
 
-    isFunction = (((typeof global.isFunction == "function") && global.isFunction) || (function (obj) {
-      return ((typeof obj == "function") && (typeof obj.call == "function") && (typeof obj.apply == "function"));
-    }));/*,
+    isFunction = ((typeof global.isFunction == "function") && global.isFunction) || function (obj) {
+
+      return (typeof obj == "function") && (typeof obj.call == "function") && (typeof obj.apply == "function");
+    }/*,
 
 
     INT_MIN = Math.pow(-2, 53), // (Math.pow(-2, 53) - 1) === (Math.pow(-2, 53)) // true // (Math.pow(-2, 53) + 1) === (Math.pow(-2, 53)) // false
-    INT_MAX = Math.pow(2, 53); // [http://blog.vjeux.com/2010/javascript/javascript-max_int-number-limits.html] via [http://stackoverflow.com/questions/307179/what-is-javascripts-max-int-whats-the-highest-integer-value-a-number-can-go-to#answer-4375743]
-*/
+    INT_MAX = Math.pow(2, 53)   // [http://blog.vjeux.com/2010/javascript/javascript-max_int-number-limits.html] via [http://stackoverflow.com/questions/307179/what-is-javascripts-max-int-whats-the-highest-integer-value-a-number-can-go-to#answer-4375743]
+*/;
 
-  NumProto.next = ((isFunction(NumProto.next) && NumProto.next) || (function (parse_int/*, is_finite, INT_MIN_VAL, INT_MAX_VAL*/) {
-    return (function () {/*
+
+  NumProto.next = (isFunction(NumProto.next) && NumProto.next) || (function (parse_int/*, is_finite, INT_MIN_VAL, INT_MAX_VAL*/) {
+    return function () {/*
       var num = parse_int(this, 10);
 
       if (is_finite(num)) {
@@ -34,41 +33,37 @@
       return num;
     */
       return parse_int(((1 * this) + 1), 10);
-    });
-  })(global.parseInt/*, global.isFinite, INT_MIN, INT_MAX*/));
+    };
+  })(global.parseInt/*, global.isFinite, INT_MIN, INT_MAX*/);
 
 
-  StrProto.next = ((isFunction(StrProto.next) && StrProto.next) || (function (str_from_char_code, parse_int, is_finite, num_proto_next) {
-    return (function () {
-      var str = ("" + this), num;
+  StrProto.next = (isFunction(StrProto.next) && StrProto.next) || (function (str_from_char_code, parse_int, is_finite, UNDEFINED_VALUE) {
+    return function () {
+      var val = ("" + this);
 
-      if (str.length == 1) {
+      if (val === "") { // there is nothing like a "next" character that could be a successor of an empty string.
 
-        str = str_from_char_code(str.charCodeAt(0) + 1);
+        val = UNDEFINED_VALUE;
 
-      } else if ((num = parse_int((1 * this), 10)) && is_finite(num)) {
+      } else if (val.length == 1) { // this definitely is a character.
 
-        str = num_proto_next.call(num);
-      } else {
-        str = "";
+        val = str_from_char_code(val.charCodeAt(0) + 1);
+
+      } else if (!is_finite(val = parse_int(((1 * this) + 1), 10))) { // either "val" gets assigned a valid number ...
+
+        val = UNDEFINED_VALUE; // ... or assignement of "val" falls back again to the [undefined] value.
       }
-      return str;
-    });
-  })(Str.fromCharCode, global.parseInt, global.isFinite, NumProto.next));
+      return val;
+    };
+  })(Str.fromCharCode, global.parseInt, global.isFinite);
 
 
-  global = Num = Str = NumProto = StrProto/* = Range = RngProto*/ = isFunction/* = INT_MIN = INT_MAX*/ = null;
+  isFunction = StrProto = NumProto = Str = Num/* = INT_MIN = INT_MAX*/ = global = null;
 
-  delete global;
-  delete Num; delete Str;
-  delete NumProto; delete StrProto/*;
-  delete Range*; delete RngProto*/;
-  delete isFunction/*; delete INT_MIN; delete INT_MAX*/;
+  delete isFunction; delete StrProto; delete NumProto; delete Str; delete Num/*;
+  delete INT_MIN; delete INT_MAX*/; delete global;
 
-  delete arguments.callee;
-
-
-}).call(null);
+}).call(null/*does force the internal [this] context pointing to the [global] object*/);
 
 
 
@@ -76,7 +71,7 @@
 
 var num = 273582153;
 var max = 273582334;
-while ((num = num.next()) < max) {
+while ((num = num.next()) <= max) {
   console.log(num);
 };
 
@@ -92,21 +87,17 @@ while ((str = str.next()) < max) {
   console.log(str);
 };
 
-*/
-
-
-
-/*
+*/ /*
 
 
   [http://closure-compiler.appspot.com/home]
 
 
-- Whitespace only - 985 byte
-(function(){var global=this,Num=global.Number,Str=global.String,NumProto=Num.prototype,StrProto=Str.prototype,isFunction=typeof global.isFunction=="function"&&global.isFunction||function(obj){return typeof obj=="function"&&typeof obj.call=="function"&&typeof obj.apply=="function"};NumProto.next=isFunction(NumProto.next)&&NumProto.next||function(parse_int){return function(){return parse_int(1*this+1,10)}}(global.parseInt);StrProto.next=isFunction(StrProto.next)&&StrProto.next||function(str_from_char_code,parse_int,is_finite,num_proto_next){return function(){var str=""+this,num;if(str.length==1)str=str_from_char_code(str.charCodeAt(0)+1);else if((num=parse_int(1*this,10))&&is_finite(num))str=num_proto_next.call(num);else str="";return str}}(Str.fromCharCode,global.parseInt,global.isFinite,NumProto.next);global=Num=Str=NumProto=StrProto=isFunction=null;delete global;delete Num;delete Str;delete NumProto;delete StrProto;delete isFunction;delete arguments.callee}).call(null);
+- Whitespace only - 956 byte
+(function(){var global=this,Num=global.Number,Str=global.String,NumProto=Num.prototype,StrProto=Str.prototype,isFunction=typeof global.isFunction=="function"&&global.isFunction||function(obj){return typeof obj=="function"&&typeof obj.call=="function"&&typeof obj.apply=="function"};NumProto.next=isFunction(NumProto.next)&&NumProto.next||function(parse_int){return function(){return parse_int(1*this+1,10)}}(global.parseInt);StrProto.next=isFunction(StrProto.next)&&StrProto.next||function(str_from_char_code,parse_int,is_finite,UNDEFINED_VALUE){return function(){var val=""+this;if(val==="")val=UNDEFINED_VALUE;else if(val.length==1)val=str_from_char_code(val.charCodeAt(0)+1);else if(!is_finite(val=parse_int(1*this+1,10)))val=UNDEFINED_VALUE;return val}}(Str.fromCharCode,global.parseInt,global.isFinite);isFunction=StrProto=NumProto=Str=Num=global=null;delete isFunction;delete StrProto;delete NumProto;delete Str;delete Num;delete global}).call(null);
 
-- Simple          - 621 byte
-(function(){var a=this,d=a.Number,f=a.String,b=d.prototype,e=f.prototype,c=typeof a.isFunction=="function"&&a.isFunction||function(a){return typeof a=="function"&&typeof a.call=="function"&&typeof a.apply=="function"};b.next=c(b.next)&&b.next||function(a){return function(){return a(1*this+1,10)}}(a.parseInt);e.next=c(e.next)&&e.next||function(a,b,e,f){return function(){var c=""+this,d;return c=c.length==1?a(c.charCodeAt(0)+1):(d=b(1*this,10))&&e(d)?f.call(d):""}}(f.fromCharCode,a.parseInt,a.isFinite,b.next);a=d=f=b=e=c=null;delete a;delete d;delete f;delete b;delete e;delete c;delete arguments.callee}).call(null);
+- Simple          - 609 byte
+(function(){var a=this,g=a.Number,c=a.String,d=g.prototype,e=c.prototype,f=typeof a.isFunction=="function"&&a.isFunction||function(a){return typeof a=="function"&&typeof a.call=="function"&&typeof a.apply=="function"};d.next=f(d.next)&&d.next||function(a){return function(){return a(1*this+1,10)}}(a.parseInt);e.next=f(e.next)&&e.next||function(a,d,e,c){return function(){var b=""+this;if(b==="")b=c;else if(b.length==1)b=a(b.charCodeAt(0)+1);else if(!e(b=d(1*this+1,10)))b=c;return b}}(c.fromCharCode,a.parseInt,a.isFinite);f=e=d=c=g=a=null;delete f;delete e;delete d;delete c;delete g;delete a}).call(null);
 
 
 */
