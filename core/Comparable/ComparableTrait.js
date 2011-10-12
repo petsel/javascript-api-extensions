@@ -23,7 +23,7 @@
     });
   })(global.Object.prototype.valueOf),
 
-  defaultCompareTypes = (function (default_value_of) {
+  defaultCompareTypes = (function (default_value_of, UNDEFINED_VALUE) {
     return (function (typeA, typeB, customValueOf) {
 
       customValueOf = (((typeof customValueOf == "function") && customValueOf) || default_value_of);
@@ -32,7 +32,8 @@
       return (
         (((valueA = customValueOf(typeA)) > (valueB = customValueOf(typeB))) && 1)
         || ((valueA < valueB) && -1)
-        || 0
+      //|| ((valueA == valueB) ? 0 : UNDEFINED_VALUE)
+        || ((valueA === valueB) ? 0 : UNDEFINED_VALUE) // as for UNDEFINED_VALUE, the 4th possible return value, please countercheck with [http://apidock.com/ruby/Comparable]
       );
     });
   })(defaultValueOf),
@@ -138,11 +139,11 @@ ComparableTrait.call(x);
 ComparableTrait.call(y);
 
 
-log("x.compareTo(y) : " + x.compareTo(y)); // 0
-log("y.compareTo(x) : " + y.compareTo(x)); // 0
+log("x.compareTo(y) : " + x.compareTo(y)); // undefined
+log("y.compareTo(x) : " + y.compareTo(x)); // undefined
 
-log("x.compareTo(z) : " + x.compareTo(z)); // 0
-log("y.compareTo(z) : " + y.compareTo(z)); // 0
+log("x.compareTo(z) : " + x.compareTo(z)); // undefined
+log("y.compareTo(z) : " + y.compareTo(z)); // undefined
 
 
 var xyzValueOf = function (obj) {
@@ -237,11 +238,11 @@ log("\"b\".inBetween(\"a\", \"d\") ? " + "b".inBetween("a", "d"));    // true
   [http://closure-compiler.appspot.com/home]
 
 
-- Whitespace only - 1.415 byte
-(function(ns){var global=this;if(typeof(ns||global).ComparableTrait=="function")return;var defaultValueOf=function(proto_value_of){return function(type){return proto_value_of.call(type).valueOf()}}(global.Object.prototype.valueOf),defaultCompareTypes=function(default_value_of){return function(typeA,typeB,customValueOf){customValueOf=typeof customValueOf=="function"&&customValueOf||default_value_of;var valueA,valueB;return(valueA=customValueOf(typeA))>(valueB=customValueOf(typeB))&&1||valueA<valueB&&-1||0}}(defaultValueOf),ComparableTrait=function(default_compare_types){return function(customCompareTypes){customCompareTypes=typeof customCompareTypes=="function"&&customCompareTypes||default_compare_types;this.compareTo=function(obj,customValueOf){return customCompareTypes(this,obj,customValueOf)};this.inBetween=function(objK,objM,customValueOf){var isInBetween=customCompareTypes(objK,objM,customValueOf);if(isInBetween<0)isInBetween=customCompareTypes(this,objK,customValueOf)>0&&customCompareTypes(this,objM,customValueOf)<0;else if(isInBetween>0)isInBetween=customCompareTypes(this,objM,customValueOf)>0&&customCompareTypes(this,objK,customValueOf)<0;return!!isInBetween}}}(defaultCompareTypes);(ns||global).ComparableTrait=ComparableTrait;ComparableTrait=defaultCompareTypes=defaultValueOf=global=null;delete ComparableTrait;delete defaultCompareTypes;delete defaultValueOf;delete global}).call(null);
+- Whitespace only - 1.465 byte
+(function(ns){var global=this;if(typeof(ns||global).ComparableTrait=="function")return;var defaultValueOf=function(proto_value_of){return function(type){return proto_value_of.call(type).valueOf()}}(global.Object.prototype.valueOf),defaultCompareTypes=function(default_value_of,UNDEFINED_VALUE){return function(typeA,typeB,customValueOf){customValueOf=typeof customValueOf=="function"&&customValueOf||default_value_of;var valueA,valueB;return(valueA=customValueOf(typeA))>(valueB=customValueOf(typeB))&&1||valueA<valueB&&-1||(valueA===valueB?0:UNDEFINED_VALUE)}}(defaultValueOf),ComparableTrait=function(default_compare_types){return function(customCompareTypes){customCompareTypes=typeof customCompareTypes=="function"&&customCompareTypes||default_compare_types;this.compareTo=function(obj,customValueOf){return customCompareTypes(this,obj,customValueOf)};this.inBetween=function(objK,objM,customValueOf){var isInBetween=customCompareTypes(objK,objM,customValueOf);if(isInBetween<0)isInBetween=customCompareTypes(this,objK,customValueOf)>0&&customCompareTypes(this,objM,customValueOf)<0;else if(isInBetween>0)isInBetween=customCompareTypes(this,objM,customValueOf)>0&&customCompareTypes(this,objK,customValueOf)<0;return!!isInBetween}}}(defaultCompareTypes);(ns||global).ComparableTrait=ComparableTrait;ComparableTrait=defaultCompareTypes=defaultValueOf=global=null;delete ComparableTrait;delete defaultCompareTypes;delete defaultValueOf;delete global}).call(null);
 
-- Simple          -   615 byte
-(function(i){var a=this;if(typeof(i||a).ComparableTrait!="function"){var f=function(a){return function(b){return a.call(b).valueOf()}}(a.Object.prototype.valueOf),g=function(a){return function(b,j,c){var c=typeof c=="function"&&c||a,d,e;return(d=c(b))>(e=c(j))&&1||d<e&&-1||0}}(f),h=function(a){return function(b){b=typeof b=="function"&&b||a;this.compareTo=function(a,c){return b(this,a,c)};this.inBetween=function(a,c,d){var e=b(a,c,d);e<0?e=b(this,a,d)>0&&b(this,c,d)<0:e>0&&(e=b(this,c,d)>0&&b(this,a,d)<0);return!!e}}}(g);(i||a).ComparableTrait=h;h=g=f=a=null;delete h;delete g;delete f;delete a}}).call(null);
+- Simple          -   627 byte
+(function(h){var a=this;if(typeof(h||a).ComparableTrait!="function"){var c=function(a){return function(b){return a.call(b).valueOf()}}(a.Object.prototype.valueOf),f=function(a,b){return function(i,j,d){var d=typeof d=="function"&&d||a,e,c;return(e=d(i))>(c=d(j))&&1||e<c&&-1||(e===c?0:b)}}(c),g=function(a){return function(b){b=typeof b=="function"&&b||a;this.compareTo=function(a,c){return b(this,a,c)};this.inBetween=function(a,c,d){var e=b(a,c,d);e<0?e=b(this,a,d)>0&&b(this,c,d)<0:e>0&&(e=b(this,c,d)>0&&b(this,a,d)<0);return!!e}}}(f);(h||a).ComparableTrait=g;g=f=c=a=null;delete g;delete f;delete c;delete a}}).call(null);
 
 
 */

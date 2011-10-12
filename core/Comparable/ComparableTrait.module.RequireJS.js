@@ -18,7 +18,7 @@ define(function () {
       });
     })(global.Object.prototype.valueOf),
 
-    defaultCompareTypes = (function (default_value_of) {
+    defaultCompareTypes = (function (default_value_of, UNDEFINED_VALUE) {
       return (function (typeA, typeB, customValueOf) {
 
         customValueOf = (((typeof customValueOf == "function") && customValueOf) || default_value_of);
@@ -27,16 +27,17 @@ define(function () {
         return (
           (((valueA = customValueOf(typeA)) > (valueB = customValueOf(typeB))) && 1)
           || ((valueA < valueB) && -1)
-          || 0
+        //|| ((valueA == valueB) ? 0 : UNDEFINED_VALUE)
+          || ((valueA === valueB) ? 0 : UNDEFINED_VALUE) // as for UNDEFINED_VALUE, the 4th possible return value, please countercheck with [http://apidock.com/ruby/Comparable]
         );
       });
     })(defaultValueOf),
 
-  /*
+/*
 
     [http://apidock.com/ruby/Comparable]
 
-  */ /*
+*/ /*
 
     JavaScript supports/enables [Function] based [Trait] and [Mixin] -patterns
     for object composition. Both patterns are containers for a single or a
@@ -51,7 +52,7 @@ define(function () {
     make use of [Function.prototype.before], [Function.prototype.after]
     and [Function.prototype.around].
 
-  */
+*/
 
     ComparableTrait = (function (default_compare_types) {
       return (function (customCompareTypes/* if [ComparableTrait] gets applied onto an object (most likely such as XYZ.prototype) it is suggested to pass a custom [compareTypes] method as well */) {
@@ -92,11 +93,11 @@ define(function () {
   [http://closure-compiler.appspot.com/home]
 
 
-- Whitespace only - 1.316 byte
-define(function(){return function(){var global=this,defaultValueOf=function(proto_value_of){return function(type){return proto_value_of.call(type).valueOf()}}(global.Object.prototype.valueOf),defaultCompareTypes=function(default_value_of){return function(typeA,typeB,customValueOf){customValueOf=typeof customValueOf=="function"&&customValueOf||default_value_of;var valueA,valueB;return(valueA=customValueOf(typeA))>(valueB=customValueOf(typeB))&&1||valueA<valueB&&-1||0}}(defaultValueOf),ComparableTrait=function(default_compare_types){return function(customCompareTypes){customCompareTypes=typeof customCompareTypes=="function"&&customCompareTypes||default_compare_types;this.compareTo=function(obj,customValueOf){return customCompareTypes(this,obj,customValueOf)};this.inBetween=function(objK,objM,customValueOf){var isInBetween=customCompareTypes(objK,objM,customValueOf);if(isInBetween<0)isInBetween=customCompareTypes(this,objK,customValueOf)>0&&customCompareTypes(this,objM,customValueOf)<0;else if(isInBetween>0)isInBetween=customCompareTypes(this,objM,customValueOf)>0&&customCompareTypes(this,objK,customValueOf)<0;return!!isInBetween}}}(defaultCompareTypes);defaultCompareTypes=defaultValueOf=global=null;delete defaultCompareTypes;delete defaultValueOf;delete global;return ComparableTrait}.call(null)});
+- Whitespace only - 1.366 byte
+define(function(){return function(){var global=this,defaultValueOf=function(proto_value_of){return function(type){return proto_value_of.call(type).valueOf()}}(global.Object.prototype.valueOf),defaultCompareTypes=function(default_value_of,UNDEFINED_VALUE){return function(typeA,typeB,customValueOf){customValueOf=typeof customValueOf=="function"&&customValueOf||default_value_of;var valueA,valueB;return(valueA=customValueOf(typeA))>(valueB=customValueOf(typeB))&&1||valueA<valueB&&-1||(valueA===valueB?0:UNDEFINED_VALUE)}}(defaultValueOf),ComparableTrait=function(default_compare_types){return function(customCompareTypes){customCompareTypes=typeof customCompareTypes=="function"&&customCompareTypes||default_compare_types;this.compareTo=function(obj,customValueOf){return customCompareTypes(this,obj,customValueOf)};this.inBetween=function(objK,objM,customValueOf){var isInBetween=customCompareTypes(objK,objM,customValueOf);if(isInBetween<0)isInBetween=customCompareTypes(this,objK,customValueOf)>0&&customCompareTypes(this,objM,customValueOf)<0;else if(isInBetween>0)isInBetween=customCompareTypes(this,objM,customValueOf)>0&&customCompareTypes(this,objK,customValueOf)<0;return!!isInBetween}}}(defaultCompareTypes);defaultCompareTypes=defaultValueOf=global=null;delete defaultCompareTypes;delete defaultValueOf;delete global;return ComparableTrait}.call(null)});
 
-- Simple          -   560 byte
-define(function(){return function(){var i,g=function(f){return function(a){return f.call(a).valueOf()}}(this.Object.prototype.valueOf),h=function(f){return function(a,e,b){var b=typeof b=="function"&&b||f,c,d;return(c=b(a))>(d=b(e))&&1||c<d&&-1||0}}(g),j=function(f){return function(a){a=typeof a=="function"&&a||f;this.compareTo=function(e,b){return a(this,e,b)};this.inBetween=function(e,b,c){var d=a(e,b,c);d<0?d=a(this,e,c)>0&&a(this,b,c)<0:d>0&&(d=a(this,b,c)>0&&a(this,e,c)<0);return!!d}}}(h),h=g=i=null;delete h;delete g;delete i;return j}.call(null)});
+- Simple          -   572 byte
+define(function(){return function(){var h,a=function(f){return function(b){return f.call(b).valueOf()}}(this.Object.prototype.valueOf),g=function(f,b){return function(i,e,c){var c=typeof c=="function"&&c||f,d,a;return(d=c(i))>(a=c(e))&&1||d<a&&-1||(d===a?0:b)}}(a),j=function(a){return function(b){b=typeof b=="function"&&b||a;this.compareTo=function(a,e){return b(this,a,e)};this.inBetween=function(a,e,c){var d=b(a,e,c);d<0?d=b(this,a,c)>0&&b(this,e,c)<0:d>0&&(d=b(this,e,c)>0&&b(this,a,c)<0);return!!d}}}(g),g=a=h=null;delete g;delete a;delete h;return j}.call(null)});
 
 
 */
