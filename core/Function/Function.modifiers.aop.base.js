@@ -34,7 +34,7 @@
     getSanitizedTarget = (function (NULL_VALUE, UNDEFINED_VALUE) {
       return function (target) {
 
-        return (!target && ((target == UNDEFINED_VALUE) || (target == NULL_VALUE))) ? NULL_VALUE : target;
+        return (!target && ((target === UNDEFINED_VALUE) || (target === NULL_VALUE))) ? NULL_VALUE : target;
       };
     })(null)
   ;
@@ -68,7 +68,7 @@
 
 
   getSanitizedTarget = makeModifierAround = makeModifierBeforeAfter = null;
-  isFunction = FctProto = global = f = null;
+  isFunction = FctProto = global = null;
 
 
 }).call(null);

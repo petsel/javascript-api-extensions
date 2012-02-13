@@ -38,7 +38,7 @@
     getSanitizedTarget = (function (NULL_VALUE, UNDEFINED_VALUE) {
       return function (target) {
 
-        return (!target && ((target == UNDEFINED_VALUE) || (target == NULL_VALUE))) ? NULL_VALUE : target;
+        return (!target && ((target === UNDEFINED_VALUE) || (target === NULL_VALUE))) ? NULL_VALUE : target;
       };
     }(null))
   ;
