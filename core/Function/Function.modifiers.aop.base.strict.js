@@ -9,52 +9,14 @@
     global = f("return this")(),
 
 
-    Fct = global.Function,
-    FctProto = Fct.prototype,
+    FctProto = global.Function.prototype,
 
 
-    isFunction = (
+    isFunction = function (obj/*:[object|value]*/) { // returns true only in case of this global functions argument is an ECMAScript [[Function]] type.
 
-      ((typeof global.isFunction == "function") && global.isFunction)
-      || ((typeof Fct.isFunction == "function") && Fct.isFunction)
-
-      || function (obj/*:[object|value]*/) {  // returns true only in case of this global functions argument is an ECMAScript [[Function]] type.
-
-    //  x-frame-safe and also filters e.g. [[RegExp]] implementationa of older mozilla version.
-        return (typeof obj == "function") && (typeof obj.call == "function") && (typeof obj.apply == "function");
-      }
-    ),
-    isCallable = (
-
-      (isFunction(global.isCallable) && global.isCallable)
-      || (isFunction(Fct.isCallable) && Fct.isCallable)
-
-      || (function (is_function, TypeErr) {            // returns true only in case of this global functions argument is a callable type.
-
-        var
-          get_callability = function (assumeCallable) {
-            var isCallable = false;
-            try {
-              assumeCallable();
-              isCallable = true;
-            } catch (exc) {
-              isCallable = !(exc instanceof TypeErr) && (exc.message != "NOT_SUPPORTED_ERR");
-            }
-            return isCallable;
-          },
-          REG_X_CALLABLE = (/function\s+[^(]+\([^)]*\)\s*\{[^}]*\}/)
-        ;
-        return function (obj/*:[object|value]*/) {/*
-
-          - older opera versions falsly can bypass this since for example [Element] claims to be typeof "function" as well as supporting both functional [call] and [apply].
-          - the [getCallability] test then will not be entered even though it was going to fail throwing "Error: NOT_SUPPORTED_ERR".
-
-          - either way - this test remains unchanged so far since a natively implemented [Function]-object always should be callable.
-        */
-          return is_function(obj) || REG_X_CALLABLE.test("" + obj) || get_callability(obj);
-        };
-      }(isFunction, global.TypeError))
-    ),
+  //  x-frame-safe and also filters e.g. [[RegExp]] implementationa of older mozilla version.
+      return (typeof obj == "function") && (typeof obj.call == "function") && (typeof obj.apply == "function");
+    },
 
 
     makeModifierBeforeAfter = function (fctBefore, fctAfter, target) {
@@ -82,35 +44,35 @@
   ;
 
 
-  FctProto.before = (isFunction(FctProto.before) && FctProto.before) || (function (is_callable, make_modifier, get_sanitized) {
+  FctProto.before = (isFunction(FctProto.before) && FctProto.before) || (function (is_function, make_modifier, get_sanitized) {
     return function (fctBefore/*:object(callable)*/, target/*:object(optional)*/) {
 
       var fctAfter = this;
-      return (is_callable(fctBefore) && is_callable(fctAfter) && make_modifier(fctBefore, fctAfter, get_sanitized(target))) || fctAfter;
+      return (is_function(fctBefore) && is_function(fctAfter) && make_modifier(fctBefore, fctAfter, get_sanitized(target))) || fctAfter;
     };
-  }(isCallable, makeModifierBeforeAfter, getSanitizedTarget));
+  }(isFunction, makeModifierBeforeAfter, getSanitizedTarget));
 
 
-  FctProto.after = (isFunction(FctProto.after) && FctProto.after) || (function (is_callable, make_modifier, get_sanitized) {
+  FctProto.after = (isFunction(FctProto.after) && FctProto.after) || (function (is_function, make_modifier, get_sanitized) {
     return function (fctAfter/*:object(callable)*/, target/*:object(optional)*/) {
 
       var fctBefore = this;
-      return (is_callable(fctBefore) && is_callable(fctAfter) && make_modifier(fctBefore, fctAfter, get_sanitized(target))) || fctBefore;
+      return (is_function(fctBefore) && is_function(fctAfter) && make_modifier(fctBefore, fctAfter, get_sanitized(target))) || fctBefore;
     };
-  }(isCallable, makeModifierBeforeAfter, getSanitizedTarget));
+  }(isFunction, makeModifierBeforeAfter, getSanitizedTarget));
 
 
-  FctProto.around/* = FctProto.cover*/ = (isFunction(FctProto.around) && FctProto.around) || (function (is_callable, make_modifier, get_sanitized) {
+  FctProto.around/* = FctProto.cover*/ = (isFunction(FctProto.around) && FctProto.around) || (function (is_function, make_modifier, get_sanitized) {
     return function (fctAround/*:object(callable)*/, target/*:object(optional)*/) {
 
       var fctEnclosed = this;
-      return (is_callable(fctEnclosed) && is_callable(fctAround) && make_modifier(fctEnclosed, fctAround, get_sanitized(target))) || fctEnclosed;
+      return (is_function(fctEnclosed) && is_function(fctAround) && make_modifier(fctEnclosed, fctAround, get_sanitized(target))) || fctEnclosed;
     };
-  }(isCallable, makeModifierAround, getSanitizedTarget));
+  }(isFunction, makeModifierAround, getSanitizedTarget));
 
 
   getSanitizedTarget = makeModifierAround = makeModifierBeforeAfter = null;
-  isCallable = isFunction = FctProto = Fct = global = f = null;
+  isFunction = FctProto = global = f = null;
 
 
 }());
