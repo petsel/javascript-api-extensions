@@ -41,28 +41,28 @@
 
 
   FctProto.before = (isFunction(FctProto.before) && FctProto.before) || (function (is_function, make_modifier, get_sanitized) {
-    return function (fctBefore/*:object(callable)*/, target/*:object(optional)*/) {
+    return function (adviceBefore/*:function*/, target/*:object(optional)*/) {
 
-      var fctAfter = this;
-      return (is_function(fctBefore) && is_function(fctAfter) && make_modifier(fctBefore, fctAfter, get_sanitized(target))) || fctAfter;
+      var proceedAfter = this;
+      return (is_function(adviceBefore) && is_function(proceedAfter) && make_modifier(adviceBefore, proceedAfter, get_sanitized(target))) || proceedAfter;
     };
   })(isFunction, makeModifierBeforeAfter, getSanitizedTarget);
 
 
   FctProto.after = (isFunction(FctProto.after) && FctProto.after) || (function (is_function, make_modifier, get_sanitized) {
-    return function (fctAfter/*:object(callable)*/, target/*:object(optional)*/) {
+    return function (adviceAfter/*:function*/, target/*:object(optional)*/) {
 
-      var fctBefore = this;
-      return (is_function(fctBefore) && is_function(fctAfter) && make_modifier(fctBefore, fctAfter, get_sanitized(target))) || fctBefore;
+      var proceedBefore = this;
+      return (is_function(proceedBefore) && is_function(adviceAfter) && make_modifier(proceedBefore, adviceAfter, get_sanitized(target))) || proceedBefore;
     };
   })(isFunction, makeModifierBeforeAfter, getSanitizedTarget);
 
 
   FctProto.around/* = FctProto.cover*/ = (isFunction(FctProto.around) && FctProto.around) || (function (is_function, make_modifier, get_sanitized) {
-    return function (fctAround/*:object(callable)*/, target/*:object(optional)*/) {
+    return function (adviceAround/*:function*/, target/*:object(optional)*/) {
 
-      var fctEnclosed = this;
-      return (is_function(fctEnclosed) && is_function(fctAround) && make_modifier(fctEnclosed, fctAround, get_sanitized(target))) || fctEnclosed;
+      var proceedEnclosed = this;
+      return (is_function(proceedEnclosed) && is_function(adviceAround) && make_modifier(proceedEnclosed, adviceAround, get_sanitized(target))) || proceedEnclosed;
     };
   })(isFunction, makeModifierAround, getSanitizedTarget);
 
