@@ -37,16 +37,18 @@
 /*
  * fix some browsers (e.g. webkit) broken prototypal [RegExp.compile] method.
 */
-  (function (RegX, REG_X_EMPTY) {
+  (function (RegX, proto_compile, REG_X_EMPTY) {
     if ((REG_X_EMPTY.compile("(?:)", "") + "") !== (REG_X_EMPTY + "")) {
 
       RegX.prototype.compile = (function (/*search, flags*/) {
 
-        return RegX.apply(this, arguments);
+      //return RegX.apply(this, arguments);   // does solve the problem only half.
+        proto_compile.apply(this, arguments); // solves the problem entirely.
+        return this;
       });
     }
     REG_X_EMPTY = null; delete REG_X_EMPTY;
-  })(global.RegExp, (/(?:)/));
+  })(global.RegExp, global.RegExp.prototype.compile, (/(?:)/));
 
 
   global = null;
