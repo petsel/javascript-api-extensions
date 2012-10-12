@@ -1,0 +1,13 @@
+184c184
+<             var listeners = (event && event.listeners), len = ((listeners && listeners.length) || 0), idx = 0;
+---
+>             var listeners = (event && event.listeners), handlers = [], len = ((listeners && listeners.length) || 0), idx = 0;
+187a188,191
+>                 handlers.push(listeners[idx++].handleEvent);
+>               }
+>               idx = 0;
+>               while (idx < len) {
+189c193
+<                 listeners[idx++].handleEvent(evt); // to handle event dispatching serially is recommended if handler-processing is not that time consuming.
+---
+>                 handlers[idx++](evt); // to handle event dispatching serially is recommended if handler-processing is not that time consuming.
