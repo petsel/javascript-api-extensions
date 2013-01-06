@@ -54,9 +54,9 @@
     ;
 /*
 
-    JavaScript supports/enables [Function] based [Trait] and [Mixin] patterns for
-    object aggregation/composition. Both patterns are containers for a single or
-    a whole bunch of implemented method(s) that is/are supposed to get bound to
+    JavaScript natively supports/enables [Function] based [Trait] and [Mixin] patterns
+    for object aggregation/composition. Both patterns are containers for a single or
+    a whole bunch of implemented method(s) that is/are supposed to get applied to
     and run on objects.
 
     In my opinion [Trait]s in JavaScript are considered to be "stateless".
